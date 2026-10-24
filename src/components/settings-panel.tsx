@@ -239,7 +239,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
     }
 
     return (
-        <div className="fixed inset-x-0 top-10 bottom-0 z-40 flex flex-col bg-background">
+        <div className="fixed inset-x-0 top-10 bottom-0 z-40 flex flex-col bg-[var(--panel)] backdrop-blur-2xl">
             <div className="flex items-center gap-2 px-4 pt-3 pb-2 max-sm:px-3">
                 <Button variant="ghost" size="icon" onClick={onClose} aria-label={t("settings.back")} title={t("settings.back")}>
                     <ArrowLeft className="h-5 w-5" />

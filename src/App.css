@@ -175,3 +175,17 @@ button:hover {
 .translucent body {
     background: transparent;
 }
+
+/* Full window panels (settings): solid normally, darker/lighter glass with blur when
+   transparency is on, so the game list behind does not get in the way */
+:root {
+    --panel: var(--background);
+}
+
+.translucent {
+    --panel: oklch(1 0 0 / 0.85);
+}
+
+.translucent.dark {
+    --panel: oklch(0.147 0.004 49.25 / 0.85);
+}
