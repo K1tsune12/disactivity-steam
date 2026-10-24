@@ -32,7 +32,6 @@ dirs = "5"
 tauri-plugin-updater = "2.9.0"
 tauri-plugin-process = "2.3.1"
 tauri-plugin-window-state = "2"
-tauri-plugin-notification = "~2.3.3"
 tauri-plugin-single-instance = "~2.3.4"
 tauri-plugin-dialog = "~2.4.2"
 # Newer releases of these plugin dependencies require Tauri 2.10, which would mix

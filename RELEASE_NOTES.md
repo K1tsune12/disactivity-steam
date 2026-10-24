@@ -12,7 +12,7 @@
 ### Fixes
 - If Steam rewrites its library files while a game is running (for example when it installs something), the entries the app needs are put back within a minute.
 - Opening the app again brings the running window to the front instead of starting a second copy, which could stop the games of the first one.
-- Windows notifications also work in the portable exe.
+- Windows notifications show the game name, stay on screen longer and work in the portable exe (it adds a Start menu shortcut, which Windows uses to name the notifications).
 - Steam is also found through the machine-wide install path when the user registry entry is missing.
 
 ### Downloads

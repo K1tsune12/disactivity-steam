@@ -193,13 +193,12 @@
   },
   "notifications": {
     "timerEnd": {
-      "title": "Temporizador de misión terminado",
-      "body": "{{name}} lleva {{count}} minutos en ejecución.",
-      "stopped": "{{name}} se ejecutó durante {{count}} minutos y se detuvo."
+      "body": "El temporizador de {{count}} minutos terminó.",
+      "stopped": "El temporizador de {{count}} minutos terminó y el juego se detuvo."
     },
     "appClosed": {
       "title": "Disactivity cerrado",
-      "timerEnd": "{{name}} se ejecutó durante {{count}} minutos y no había otro juego en ejecución.",
+      "timerEnd": "El temporizador de {{count}} minutos terminó. No había otro juego en ejecución, así que Disactivity se cerró.",
       "scheduled": "Terminó el plazo programado de {{count}} minutos."
     }
   }

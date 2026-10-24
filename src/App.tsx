@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 import { Search, RefreshCw, Gamepad2, Loader2, Star, Filter } from "lucide-react"
-import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification"
 import { exit } from "@tauri-apps/plugin-process"
 import { getCurrentWindow, UserAttentionType } from "@tauri-apps/api/window"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -262,14 +261,12 @@ export default function GameLauncher() {
     const notify = async (title: string, body: string) => {
         toast.info(title, { description: body, duration: Infinity })
         getCurrentWindow().requestUserAttention(UserAttentionType.Informational).catch(console.error)
-        let granted = await isPermissionGranted()
-        if (!granted) granted = (await requestPermission()) === "granted"
-        if (granted) sendNotification({ title, body })
+        await invoke("show_notification", { title, body })
     }
 
     // Closing exits the app for real (not to the tray); the backend cleans up on exit
-    const closeApp = async (reason: string) => {
-        await notify(t("notifications.appClosed.title"), reason).catch(console.error)
+    const closeApp = async (title: string, reason: string) => {
+        await notify(title, reason).catch(console.error)
         await exit(0)
     }
 
@@ -285,7 +282,7 @@ export default function GameLauncher() {
 
         if (current.timerEndAction === "none") {
             if (current.notifyOnTimerEnd) {
-                await notify(t("notifications.timerEnd.title"), t("notifications.timerEnd.body", { name, count: minutes }))
+                await notify(name, t("notifications.timerEnd.body", { count: minutes }))
             }
             return
         }
@@ -293,9 +290,9 @@ export default function GameLauncher() {
         await handleStopGame(gameId)
         const stillRunning = await invoke<string[]>("get_running_games")
         if (current.timerEndAction === "stopAndClose" && stillRunning.length === 0) {
-            await closeApp(t("notifications.appClosed.timerEnd", { name, count: minutes }))
+            await closeApp(name, t("notifications.appClosed.timerEnd", { count: minutes }))
         } else if (current.notifyOnTimerEnd) {
-            await notify(t("notifications.timerEnd.title"), t("notifications.timerEnd.stopped", { name, count: minutes }))
+            await notify(name, t("notifications.timerEnd.stopped", { count: minutes }))
         }
     }
 
@@ -320,7 +317,10 @@ export default function GameLauncher() {
         const interval = setInterval(() => {
             if (Date.now() >= closeAt) {
                 clearInterval(interval)
-                closeApp(t("notifications.appClosed.scheduled", { count: settings.autoCloseMinutes })).catch(console.error)
+                closeApp(
+                    t("notifications.appClosed.title"),
+                    t("notifications.appClosed.scheduled", { count: settings.autoCloseMinutes })
+                ).catch(console.error)
             }
         }, 5000)
         return () => clearInterval(interval)

@@ -193,13 +193,12 @@
   },
   "notifications": {
     "timerEnd": {
-      "title": "Quest timer finished",
-      "body": "{{name}} has been running for {{count}} minutes.",
-      "stopped": "{{name}} ran for {{count}} minutes and was stopped."
+      "body": "The {{count}} minute timer finished.",
+      "stopped": "The {{count}} minute timer finished and the game was stopped."
     },
     "appClosed": {
       "title": "Disactivity closed",
-      "timerEnd": "{{name}} ran for {{count}} minutes and no other game was running.",
+      "timerEnd": "The {{count}} minute timer finished. No other game was running, so Disactivity was closed.",
       "scheduled": "The {{count}} minute schedule ended."
     }
   }

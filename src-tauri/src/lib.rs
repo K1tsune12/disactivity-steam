@@ -658,28 +658,65 @@ fn repair_steam_installs(state: &AppState) {
     }
 }
 
-// Icon shown on Windows notifications of the portable exe (see register_notification_app_id)
-const NOTIFICATION_ICON: &[u8] = include_bytes!("../icons/128x128.png");
+// PowerShell scripts for Windows notifications (see each file for details)
+const NOTIFY_SCRIPT: &str = include_str!("../scripts/notify.ps1");
+const NOTIFICATION_SHORTCUT_SCRIPT: &str = include_str!("../scripts/notification-shortcut.ps1");
 
-/// Windows only shows notifications from apps it knows. The installer registers the app
-/// through its Start menu shortcut; this registers the same app ID under the current user
-/// so the portable exe gets notifications too.
-#[cfg(windows)]
-fn register_notification_app_id(app: &tauri::App) {
-    use winreg::enums::HKEY_CURRENT_USER;
+/// PowerShell command for one of the bundled scripts, written to the config dir and run
+/// without a console window
+fn powershell_command(name: &str, script: &str) -> Result<Command, String> {
+    let dir = dirs::config_dir()
+        .ok_or("Could not determine config directory")?
+        .join("disactivity")
+        .join("scripts");
+    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    let path = dir.join(name);
+    fs::write(&path, script).map_err(|e| e.to_string())?;
 
-    let key_path = format!("Software\\Classes\\AppUserModelId\\{}", app.config().identifier);
-    let Ok((key, _)) = winreg::RegKey::predef(HKEY_CURRENT_USER).create_subkey(key_path) else {
+    let mut command = Command::new("powershell.exe");
+    command
+        .args(["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File"])
+        .arg(path)
+        .creation_flags(CREATE_NO_WINDOW);
+    Ok(command)
+}
+
+/// Windows only names notifications after a Start menu shortcut tagged with the app ID.
+/// The installer creates it; for the portable exe it is created here, in the background.
+fn ensure_notification_shortcut(app: &tauri::App) {
+    let (Ok(exe), Some(data_dir)) = (std::env::current_exe(), dirs::data_dir()) else {
         return;
     };
-    let _ = key.set_value("DisplayName", &"Disactivity Steam");
+    let shortcut = data_dir
+        .join("Microsoft\\Windows\\Start Menu\\Programs")
+        .join("Disactivity Steam.lnk");
+    let app_id = app.config().identifier.clone();
 
-    if let Some(icon) = dirs::config_dir().map(|p| p.join("disactivity").join("notification-icon.png")) {
-        let saved = icon.parent().map_or(Ok(()), fs::create_dir_all).and_then(|_| fs::write(&icon, NOTIFICATION_ICON));
-        if saved.is_ok() {
-            let _ = key.set_value("IconUri", &icon.to_string_lossy().to_string());
+    std::thread::spawn(move || {
+        if let Ok(mut command) = powershell_command("notification-shortcut.ps1", NOTIFICATION_SHORTCUT_SCRIPT) {
+            let _ = command
+                .arg("-Target")
+                .arg(&exe)
+                .arg("-ShortcutPath")
+                .arg(&shortcut)
+                .arg("-AppId")
+                .arg(&app_id)
+                .output();
         }
-    }
+    });
+}
+
+/// Windows notification that stays about 25 seconds, without the default sound (the app
+/// plays the sound picked in Settings)
+#[tauri::command]
+fn show_notification(app: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
+    powershell_command("notify.ps1", NOTIFY_SCRIPT)?
+        .env("DISACTIVITY_APP_ID", &app.config().identifier)
+        .env("DISACTIVITY_TITLE", title)
+        .env("DISACTIVITY_BODY", body)
+        .spawn()
+        .map_err(|e| format!("Failed to show notification: {}", e))?;
+    Ok(())
 }
 
 fn show_main_window(app: &tauri::AppHandle) {
@@ -1026,7 +1063,6 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         // Remember window size, position and maximized state between launches
         .plugin(tauri_plugin_window_state::Builder::default().build())
-        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(AppState {
             running_games: Mutex::new(HashMap::new()),
@@ -1034,8 +1070,7 @@ pub fn run() {
         })
         .setup(|app| {
             cleanup_stale_steam_installs();
-            #[cfg(windows)]
-            register_notification_app_id(app);
+            ensure_notification_shortcut(app);
             create_tray(app)?;
 
             let handle = app.handle().clone();
@@ -1058,7 +1093,8 @@ pub fn run() {
             restart_discord,
             register_steam_favorites,
             unregister_steam_favorite,
-            play_sound
+            play_sound,
+            show_notification
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
