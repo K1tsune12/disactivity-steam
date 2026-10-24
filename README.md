@@ -36,14 +36,18 @@ Most games added to Discord since 2025 (EA Sports FC 27, Madden NFL 27, NHL 27, 
 - **Steam library mode**: run games that have no executable on Discord's list, as long as they have a Steam ID
 - **No download needed**: the game does not need to be installed, and it does not need to be in your Steam account
 - **Favorites**: favorite Steam games are prepared when the app opens, so one Discord restart covers all of them
-- **Quest timer**: progress bar for quests, set to 15, 30, 45 or 60 minutes, or turned off in Settings
+- **Quest timer**: progress bar for quests, set to 15, 30, 45 or 60 minutes or turned off, with an optional notification and automatic stop when it ends
+- **Steam games filter**: show only the games that run through the Steam library
+- **Clean taskbar**: optionally hide the fake game windows from the taskbar and Alt+Tab
+- **System tray**: tray icon, with an option to close to the tray instead of quitting
+- **Automatic updates**: the installed app updates itself from this repository's releases
 - **Window memory**: size, position and maximized state are kept between launches
 - **Automatic cleanup**: everything the app creates is removed when you stop a game or close the app, and leftovers from a crash are removed on the next launch
 - **Languages**: Portuguese (Brazil), English and Spanish, chosen in Settings or taken from the system
 
 ## Download
 
-Get the latest version from the [Releases](https://github.com/K1tsune12/disactivity-steam/releases/latest) page. There is an installer and a portable `.exe` that runs without installing.
+Get the latest version from the [Releases](https://github.com/K1tsune12/disactivity-steam/releases/latest) page. There is an installer, which receives automatic updates, and a portable `.exe` that runs without installing.
 
 ## How to use
 
@@ -56,7 +60,19 @@ Games marked with a blue **Steam** tag run in Steam library mode. The first time
 
 Games that have both an executable and a Steam ID show a **Run via Steam library** option in the arrow menu next to the Run button.
 
-The gear button in the title bar opens **Settings**: language, the quest timer and light or dark theme.
+The gear button in the title bar opens **Settings**:
+
+| Option | What it does |
+|---|---|
+| Language | Portuguese (Brazil), English or Spanish |
+| Quest timer | Progress bar of 15, 30, 45 or 60 minutes, or off |
+| Notify when the timer ends | Windows notification when the timer is reached |
+| Stop the game when the timer ends | Stops the game by itself |
+| Hide game windows from the taskbar | The fake windows still exist (Discord needs them) but stay out of the taskbar and Alt+Tab |
+| Close to the system tray | The close button hides the app; quit from the tray icon |
+| Theme | Light or dark |
+
+The filter button next to the search shows only Steam library games.
 
 ## How it works
 
@@ -78,7 +94,7 @@ When you run one of these games, Disactivity Steam:
 3. Starts the fake process from `<game folder>/_disactivity/`
 4. When you stop the game (or unfavorite it, or close the app), removes exactly what it created
 
-What was created is also saved to `%APPDATA%\disactivity\disactivity_steam_sessions.json`, so if the app is killed or crashes, the next launch cleans it up.
+What was created is also saved to `%APPDATA%\disactivity\disactivity_steam_sessions.json`, so if the app is killed or crashes, the next launch cleans it up. While games are running, the app checks every minute that its entries are still there and puts them back if Steam rewrote its files.
 
 ## Building from source
 
@@ -112,7 +128,9 @@ npm run tauri build
 The [Build workflow](.github/workflows/build.yml) compiles the app on GitHub, so nothing needs to be installed to get a new version:
 
 - every push builds the installer and the portable exe and keeps them as an artifact on the workflow run, for testing
-- pushing a tag such as `v1.1.0` also publishes them as a release
+- pushing a tag such as `v1.1.0` publishes them as a release, with the notes from `RELEASE_NOTES.md` and the `latest.json` used by the updater
+
+The installer is signed for the updater with a key stored in the repository secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. A fork of this project needs its own key (`npx tauri signer generate`) and its own `pubkey` and endpoint in `src-tauri/tauri.conf.json`.
 
 ## Project structure
 
@@ -137,10 +155,15 @@ disactivity-steam/
 - Automatic executable selection now prefers the game over its launcher (it picked the launcher for games like Baldur's Gate 3 and League of Legends)
 - A failure loading Discord's non-games list no longer breaks the whole game list
 - Window size and position are remembered
-- Settings menu with language selection and a configurable quest timer
+- Settings menu with language, quest timer, window and tray options
+- Quest timer notification and automatic stop
+- Option to hide the fake game windows from the taskbar
+- System tray icon
+- Steam games filter
+- Automatic updates from this fork's releases
 - Portuguese (Brazil) translation
 - Steam is also found through the machine-wide install path when the user entry is missing
-- The automatic update check is disabled, since it pointed to the original project's releases
+
 
 ## Privacy and safety
 

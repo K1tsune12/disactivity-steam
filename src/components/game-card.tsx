@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Info, Play, Square, Loader2, Star, ChevronDown, Gamepad2 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useQuestTimer } from "@/lib/quest-timer"
+import { useSettings } from "@/lib/settings"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -94,8 +94,8 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
         return () => clearInterval(interval)
     }, [isRunning, startTime])
 
-    const questTimer = useQuestTimer()
-    const questTimerMs = questTimer.minutes * 60 * 1000
+    const settings = useSettings()
+    const questTimerMs = settings.questTimerMinutes * 60 * 1000
     const progress = Math.min((elapsed / questTimerMs) * 100, 100)
 
     const win32Executables = getWin32Executables(game)
@@ -184,7 +184,7 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
                     </TooltipProvider>
                 </div>
                 <span className="block truncate max-w-full text-xs text-muted-foreground font-mono max-sm:text-[10px]">{t("gameCard.id")}: {game.id}</span>
-                {isRunning && questTimer.enabled && (
+                {isRunning && settings.questTimerEnabled && (
                     <div className="mt-1.5 flex items-center gap-2">
                         <div className="flex-1 h-1.5 rounded-full bg-muted/50 overflow-hidden">
                             <div

@@ -17,6 +17,7 @@ import {
     Settings,
     Languages,
     Timer,
+    AppWindow,
 } from "lucide-react"
 
 import { getCurrentWindow } from "@tauri-apps/api/window"
@@ -37,7 +38,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { Game } from "@/components/game-card"
-import { QUEST_TIMER_OPTIONS, setQuestTimer, useQuestTimer } from "@/lib/quest-timer"
+import { QUEST_TIMER_OPTIONS, getSettings, setSettings, useSettings } from "@/lib/settings"
 
 type UpdateState = "idle" | "checking" | "available" | "downloading" | "ready" | "error"
 type SupportedLanguage = "pt-BR" | "en-US" | "es-ES"
@@ -63,8 +64,8 @@ interface TitleBarProps {
 export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps) {
     const { t, i18n } = useTranslation()
     const currentLanguage = getSupportedLanguage(i18n.resolvedLanguage || i18n.language)
-    const questTimer = useQuestTimer()
-    const questTimerMs = questTimer.minutes * 60 * 1000
+    const settings = useSettings()
+    const questTimerMs = settings.questTimerMinutes * 60 * 1000
     const [isHovered, setIsHovered] = useState(false)
     const [isDark, setIsDark] = useState(false)
     const [, setTick] = useState(0)
@@ -107,6 +108,10 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
             }
         }
         const window = getCurrentWindow()
+        if (getSettings().closeToTray) {
+            await window.hide()
+            return
+        }
         await window.close()
     }
 
@@ -117,8 +122,8 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
             document.documentElement.classList.add("dark")
         }
 
-        // Fork: no automatic update check, the updater endpoint points to upstream
-        // releases and would replace this build with the original app.
+        // Check for updates on boot (releases of this fork, see tauri.conf.json)
+        checkForUpdates().catch(console.error)
     }, [])
 
     // Only an explicit choice is saved; otherwise the system language is used
@@ -348,11 +353,11 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                                         <p className="text-sm font-medium truncate">{game.name}</p>
                                         <div className="flex items-center gap-1.5">
                                             <span className="text-xs text-green-500 font-medium">{formatElapsedTime(elapsed)}</span>
-                                            {questTimer.enabled && (
+                                            {settings.questTimerEnabled && (
                                                 <span className="text-[10px] text-muted-foreground">/ {formatElapsedTime(questTimerMs)}</span>
                                             )}
                                         </div>
-                                        {questTimer.enabled && (
+                                        {settings.questTimerEnabled && (
                                             <div className="mt-1 h-1 rounded-full bg-muted/50 overflow-hidden">
                                                 <div
                                                     className={`h-full rounded-full transition-all duration-1000 ease-linear ${
@@ -457,21 +462,62 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                             {t("settings.questTimer.title")}
                         </DropdownMenuLabel>
                         <DropdownMenuCheckboxItem
-                            checked={questTimer.enabled}
-                            onCheckedChange={(checked) => setQuestTimer({ enabled: checked === true })}
+                            checked={settings.questTimerEnabled}
+                            onCheckedChange={(checked) => setSettings({ questTimerEnabled: checked === true })}
+                            onSelect={(e) => e.preventDefault()}
                         >
                             {t("settings.questTimer.show")}
                         </DropdownMenuCheckboxItem>
                         <DropdownMenuRadioGroup
-                            value={String(questTimer.minutes)}
-                            onValueChange={(value) => setQuestTimer({ minutes: Number(value) })}
+                            value={String(settings.questTimerMinutes)}
+                            onValueChange={(value) => setSettings({ questTimerMinutes: Number(value) })}
                         >
                             {QUEST_TIMER_OPTIONS.map((minutes) => (
-                                <DropdownMenuRadioItem key={minutes} value={String(minutes)} disabled={!questTimer.enabled}>
+                                <DropdownMenuRadioItem
+                                    key={minutes}
+                                    value={String(minutes)}
+                                    disabled={!settings.questTimerEnabled}
+                                    onSelect={(e) => e.preventDefault()}
+                                >
                                     {t("settings.questTimer.minutes", { count: minutes })}
                                 </DropdownMenuRadioItem>
                             ))}
                         </DropdownMenuRadioGroup>
+                        <DropdownMenuCheckboxItem
+                            checked={settings.notifyOnTimerEnd}
+                            disabled={!settings.questTimerEnabled}
+                            onCheckedChange={(checked) => setSettings({ notifyOnTimerEnd: checked === true })}
+                            onSelect={(e) => e.preventDefault()}
+                        >
+                            {t("settings.questTimer.notify")}
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={settings.stopOnTimerEnd}
+                            disabled={!settings.questTimerEnabled}
+                            onCheckedChange={(checked) => setSettings({ stopOnTimerEnd: checked === true })}
+                            onSelect={(e) => e.preventDefault()}
+                        >
+                            {t("settings.questTimer.autoStop")}
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="flex items-center gap-2">
+                            <AppWindow className="h-4 w-4" />
+                            {t("settings.windows.title")}
+                        </DropdownMenuLabel>
+                        <DropdownMenuCheckboxItem
+                            checked={settings.hideGameWindows}
+                            onCheckedChange={(checked) => setSettings({ hideGameWindows: checked === true })}
+                            onSelect={(e) => e.preventDefault()}
+                        >
+                            {t("settings.windows.hideGameWindows")}
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={settings.closeToTray}
+                            onCheckedChange={(checked) => setSettings({ closeToTray: checked === true })}
+                            onSelect={(e) => e.preventDefault()}
+                        >
+                            {t("settings.windows.closeToTray")}
+                        </DropdownMenuCheckboxItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuLabel>{t("settings.appearance")}</DropdownMenuLabel>
                         <DropdownMenuItem className="cursor-pointer" onSelect={() => toggleTheme()}>

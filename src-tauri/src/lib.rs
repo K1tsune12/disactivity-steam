@@ -25,6 +25,10 @@ const STEAM_SIM_DIR_NAME: &str = "_disactivity";
 const STEAM_SIM_EXE_NAME: &str = "DisactivitySim.exe";
 const STEAM_SESSIONS_FILE_NAME: &str = "disactivity_steam_sessions.json";
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+// Read by the slave: keep its window out of the taskbar and Alt+Tab
+const SLAVE_HIDE_WINDOW_ENV: &str = "DISACTIVITY_HIDE_WINDOW";
+// How often fake Steam installs are checked and repaired (see repair_steam_installs)
+const STEAM_REPAIR_INTERVAL_SECS: u64 = 60;
 
 /// Tracks a running game process
 struct RunningGame {
@@ -315,6 +319,9 @@ struct SteamInstall {
     game_dir: PathBuf,
     /// Fake appmanifest we wrote (None when the game is really installed)
     manifest: Option<PathBuf>,
+    /// Its content, to write it again if Steam removes it
+    #[serde(default)]
+    manifest_content: Option<String>,
     /// libraryfolders.vdf and the app ID we added to it
     vdf_entry: Option<(PathBuf, String)>,
     /// Whether we created `game_dir` (then it is removed with the install)
@@ -537,6 +544,7 @@ fn create_steam_install(game_name: &str, steam_app_ids: &[String]) -> Result<Ste
     let mut install = SteamInstall {
         game_dir: PathBuf::new(),
         manifest: None,
+        manifest_content: None,
         vdf_entry: None,
         created_dir: false,
         favorite: false,
@@ -558,8 +566,9 @@ fn create_steam_install(game_name: &str, steam_app_ids: &[String]) -> Result<Ste
         game_name.replace('"', ""),
         installdir
     );
-    fs::write(&manifest, content).map_err(|e| format!("Failed to write appmanifest: {}", e))?;
+    fs::write(&manifest, &content).map_err(|e| format!("Failed to write appmanifest: {}", e))?;
     install.manifest = Some(manifest);
+    install.manifest_content = Some(content);
 
     install.game_dir = steamapps.join("common").join(&installdir);
     // Keep a pre-existing folder (e.g. left by an uninstall), only remove ours
@@ -621,6 +630,77 @@ fn release_steam_install(state: &AppState, game_id: &str, unmark: impl FnOnce(&m
     save_steam_installs(&installs);
 }
 
+fn slave_command(exe_path: &Path, hide_window: bool) -> Command {
+    let mut command = Command::new(exe_path);
+    if hide_window {
+        command.env(SLAVE_HIDE_WINDOW_ENV, "1");
+    }
+    command
+}
+
+/// Steam rewrites libraryfolders.vdf (and may drop unknown manifests) when it installs
+/// or updates something. Put back what a running or favorite game needs.
+fn repair_steam_installs(state: &AppState) {
+    let Ok(installs) = state.steam_installs.lock() else {
+        return;
+    };
+    for install in installs.values() {
+        if let (Some(manifest), Some(content)) = (&install.manifest, &install.manifest_content) {
+            if !manifest.exists() {
+                let _ = fs::write(manifest, content);
+            }
+        }
+        // The library is the folder above steamapps, where the manifest lives
+        let library = install.manifest.as_ref().and_then(|m| m.parent()).and_then(Path::parent);
+        if let (Some((vdf, app_id)), Some(library)) = (&install.vdf_entry, library) {
+            let _ = vdf_add_app(vdf, library, app_id);
+        }
+    }
+}
+
+fn show_main_window(app: &tauri::AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
+/// System tray icon: left click shows the window, the menu can show it or quit
+fn create_tray(app: &tauri::App) -> tauri::Result<()> {
+    use tauri::menu::{Menu, MenuItem};
+    use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+
+    let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&show, &quit])?;
+
+    let mut tray = TrayIconBuilder::new()
+        .tooltip("Disactivity Steam")
+        .menu(&menu)
+        .show_menu_on_left_click(false)
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "show" => show_main_window(app),
+            "quit" => app.exit(0),
+            _ => {}
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                show_main_window(tray.app_handle());
+            }
+        });
+    if let Some(icon) = app.default_window_icon() {
+        tray = tray.icon(icon.clone());
+    }
+    tray.build(app)?;
+    Ok(())
+}
+
 /// Start the slave from inside the game's Steam install.
 /// Returns the running game and whether Discord must be restarted to see it.
 fn start_steam_game(
@@ -628,6 +708,7 @@ fn start_steam_game(
     game_id: &str,
     game_name: &str,
     steam_app_ids: &[String],
+    hide_window: bool,
 ) -> Result<(RunningGame, bool), String> {
     let (game_dir, needs_discord_restart) =
         ensure_steam_install(state, game_id, game_name, steam_app_ids, |i| i.running = true)?;
@@ -638,7 +719,7 @@ fn start_steam_game(
         .and_then(|_| fs::write(&exe_path, SLAVE_EXE))
         .map_err(|e| format!("Failed to write executable: {}", e))
         .and_then(|_| {
-            Command::new(&exe_path)
+            slave_command(&exe_path, hide_window)
                 .arg(game_name)
                 .current_dir(&sim_dir)
                 .spawn()
@@ -730,6 +811,7 @@ fn start_game(
     selected_executable: Option<String>,
     steam_app_ids: Vec<String>,
     use_steam: bool,
+    hide_window: bool,
     state: tauri::State<'_, AppState>,
 ) -> Result<StartGameResponse, String> {
     // Check if game is already running
@@ -741,7 +823,7 @@ fn start_game(
     }
 
     if use_steam {
-        let (game, needs_discord_restart) = start_steam_game(&state, &game_id, &game_name, &steam_app_ids)?;
+        let (game, needs_discord_restart) = start_steam_game(&state, &game_id, &game_name, &steam_app_ids, hide_window)?;
         let path = game.temp_dir.to_string_lossy().to_string();
         let mut running = state.running_games.lock().map_err(|e| e.to_string())?;
         running.insert(game_id, game);
@@ -763,7 +845,7 @@ fn start_game(
     let (temp_dir, final_exe_path) = setup_game_executable(&game_id, &exe_path)?;
 
     // Start the process
-    let process = Command::new(&final_exe_path)
+    let process = slave_command(&final_exe_path, hide_window)
         .spawn()
         .map_err(|e| {
             // Cleanup on failure
@@ -881,12 +963,20 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         // Remember window size, position and maximized state between launches
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_notification::init())
         .manage(AppState {
             running_games: Mutex::new(HashMap::new()),
             steam_installs: Mutex::new(HashMap::new()),
         })
-        .setup(|_app| {
+        .setup(|app| {
             cleanup_stale_steam_installs();
+            create_tray(app)?;
+
+            let handle = app.handle().clone();
+            std::thread::spawn(move || loop {
+                std::thread::sleep(std::time::Duration::from_secs(STEAM_REPAIR_INTERVAL_SECS));
+                repair_steam_installs(handle.state::<AppState>().inner());
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -903,14 +993,14 @@ pub fn run() {
             register_steam_favorites,
             unregister_steam_favorite
         ])
-        .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { .. } = event {
-                // Cleanup all games when window is closed
-                if let Some(state) = window.try_state::<AppState>() {
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            // Cleanup all games when the app exits (window closed or Quit in the tray)
+            if let tauri::RunEvent::Exit = event {
+                if let Some(state) = app.try_state::<AppState>() {
                     cleanup_all_games(state.inner());
                 }
             }
-        })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        });
 }

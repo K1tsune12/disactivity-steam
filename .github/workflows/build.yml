@@ -1,8 +1,8 @@
 # Builds the Windows app on GitHub's servers.
 # - Push to any branch (or run it by hand): build and keep the files as a downloadable
 #   artifact for testing, nothing is published.
-# - Push a tag like v1.1.0: build and publish a GitHub release with the installer and
-#   the portable exe.
+# - Push a tag like v1.1.0: build and publish a GitHub release with the installer, the
+#   portable exe and latest.json, which installed apps read to update themselves.
 name: Build
 
 on:
@@ -41,16 +41,36 @@ jobs:
         working-directory: src-tauri/slave
         run: cargo build --release
 
+      # Signs the installer for the auto updater (keys stored as repository secrets)
       - name: Build app and installer
         run: npx tauri build --bundles nsis
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Collect files
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $setup = "Disactivity.Steam_${version}_x64-setup.exe"
           New-Item -ItemType Directory -Force out | Out-Null
-          Copy-Item "src-tauri/target/release/bundle/nsis/*-setup.exe" "out/Disactivity.Steam_${version}_x64-setup.exe"
+          Copy-Item "src-tauri/target/release/bundle/nsis/*-setup.exe" "out/$setup"
           Copy-Item "src-tauri/target/release/disactivity-steam.exe" "out/Disactivity.Steam_${version}_x64_portable.exe"
+
+          if ("${{ github.ref }}".StartsWith("refs/tags/v")) {
+            $signature = (Get-Content "src-tauri/target/release/bundle/nsis/*-setup.exe.sig" -Raw).Trim()
+            @{
+              version = $version
+              notes = "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+              pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+              platforms = @{
+                "windows-x86_64" = @{
+                  signature = $signature
+                  url = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$setup"
+                }
+              }
+            } | ConvertTo-Json -Depth 4 | Set-Content out/latest.json -Encoding utf8NoBOM
+          }
 
       - uses: actions/upload-artifact@v4
         with:
@@ -62,4 +82,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: out/*
-          generate_release_notes: true
+          body_path: RELEASE_NOTES.md

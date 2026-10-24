@@ -10,7 +10,7 @@ use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW, RegisterClassW,
     ShowWindow, TranslateMessage, CS_HREDRAW, CS_VREDRAW, MSG, SW_SHOWMINNOACTIVE,
-    WNDCLASSW, WS_EX_APPWINDOW, WS_EX_NOACTIVATE, WS_OVERLAPPEDWINDOW, WS_POPUP,
+    WNDCLASSW, WS_EX_APPWINDOW, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_OVERLAPPEDWINDOW, WS_POPUP,
     WM_CLOSE, WM_DESTROY, WM_QUERYENDSESSION, WM_ENDSESSION,
 };
 
@@ -39,6 +39,15 @@ fn main() {
     // Optional first argument overrides the window title (Steam library mode passes the game name)
     let title = env::args().nth(1).unwrap_or_else(|| exe_name.to_string());
 
+    // Set by the app when "hide game windows" is on: a tool window keeps the window
+    // (Discord needs one) but leaves it out of the taskbar and Alt+Tab
+    let hide_window = env::var("DISACTIVITY_HIDE_WINDOW").is_ok();
+    let ex_style = if hide_window {
+        WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE
+    } else {
+        WS_EX_APPWINDOW | WS_EX_NOACTIVATE
+    };
+
     let class_name = to_wide_string("DisactivitySlaveClass");
     let window_title = to_wide_string(&title);
 
@@ -63,7 +72,7 @@ fn main() {
         // Using WS_EX_APPWINDOW so it appears in taskbar (some detection methods need this)
         // Using WS_EX_NOACTIVATE so it doesn't steal focus
         let hwnd = CreateWindowExW(
-            WS_EX_APPWINDOW | WS_EX_NOACTIVATE,
+            ex_style,
             class_name.as_ptr(),
             window_title.as_ptr(),
             WS_POPUP | WS_OVERLAPPEDWINDOW,

@@ -4,7 +4,8 @@
   },
   "search": {
     "placeholder": "Buscar juegos por nombre o ID...",
-    "button": "Buscar"
+    "button": "Buscar",
+    "steamOnlyFilter": "Mostrar solo juegos de la biblioteca de Steam"
   },
   "actions": {
     "refresh": "Actualizar",
@@ -147,7 +148,21 @@
       "title": "Temporizador de misión",
       "show": "Mostrar progreso de la misión",
       "minutes_one": "{{count}} minuto",
-      "minutes_other": "{{count}} minutos"
+      "minutes_other": "{{count}} minutos",
+      "notify": "Avisar cuando termine el temporizador",
+      "autoStop": "Detener el juego cuando termine el temporizador"
+    },
+    "windows": {
+      "title": "Ventanas",
+      "hideGameWindows": "Ocultar las ventanas de los juegos de la barra de tareas",
+      "closeToTray": "Cerrar a la bandeja del sistema"
+    }
+  },
+  "notifications": {
+    "timerEnd": {
+      "title": "Temporizador de misión terminado",
+      "body": "{{name}} lleva {{count}} minutos en ejecución.",
+      "stopped": "{{name}} se ejecutó durante {{count}} minutos y se detuvo."
     }
   }
 }

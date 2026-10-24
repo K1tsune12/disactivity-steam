@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
-import { Search, RefreshCw, Gamepad2, Loader2, Star } from "lucide-react"
+import { Search, RefreshCw, Gamepad2, Loader2, Star, Filter } from "lucide-react"
+import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { getSettings, useSettings } from "@/lib/settings"
 import { GameCard, getSteamAppIds, isSteamOnly, type Game } from "@/components/game-card"
 import { TitleBar } from "@/components/title-bar"
 import { Separator } from "@/components/ui/separator"
@@ -35,6 +38,8 @@ interface StartGameResponse {
 export default function GameLauncher() {
     const { t } = useTranslation()
     const [searchQuery, setSearchQuery] = useState("")
+    const [steamOnlyFilter, setSteamOnlyFilter] = useState(false)
+    const settings = useSettings()
     const [games, setGames] = useState<Game[]>([])
     const [filteredGames, setFilteredGames] = useState<Game[]>([])
     const [currentPage, setCurrentPage] = useState(1)
@@ -145,12 +150,14 @@ export default function GameLauncher() {
 
         setCurrentPage(1)
 
+        const baseGames = steamOnlyFilter ? games.filter(isSteamOnly) : games
+
         if (terms.length === 0) {
-            setFilteredGames(games)
+            setFilteredGames(baseGames)
             return
         }
 
-        const results = games.filter((game) => {
+        const results = baseGames.filter((game) => {
             const gameName = game.name.toLowerCase()
             const gameId = game.id.toLowerCase()
             const gameAliases = game.aliases?.map((alias) => alias.toLowerCase()) || []
@@ -163,7 +170,7 @@ export default function GameLauncher() {
         })
 
         setFilteredGames(results)
-    }, [searchQuery, games])
+    }, [searchQuery, games, steamOnlyFilter])
 
     const handleRefresh = () => {
         setSearchQuery("")
@@ -189,6 +196,7 @@ export default function GameLauncher() {
                 selectedExecutable: selectedExecutable || null,
                 steamAppIds,
                 useSteam,
+                hideWindow: getSettings().hideGameWindows,
             })
 
             setRunningGames((prev) => new Set(prev).add(game.id))
@@ -244,6 +252,42 @@ export default function GameLauncher() {
                 return next
             })
         }
+    }
+
+    // Quest timer end: notify and/or stop each running game once
+    const timerHandled = useRef<Set<string>>(new Set())
+    useEffect(() => {
+        if (!settings.questTimerEnabled) return
+        const timerMs = settings.questTimerMinutes * 60 * 1000
+        const interval = setInterval(() => {
+            gameStartTimes.forEach((startTime, gameId) => {
+                const key = `${gameId}:${startTime}`
+                if (Date.now() - startTime < timerMs || timerHandled.current.has(key)) return
+                timerHandled.current.add(key)
+                const game = games.find((g) => g.id === gameId)
+                const name = game?.name || "Game"
+                if (settings.notifyOnTimerEnd) {
+                    notifyTimerEnd(name).catch(console.error)
+                }
+                if (settings.stopOnTimerEnd) {
+                    handleStopGame(gameId).catch(console.error)
+                }
+            })
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [settings, gameStartTimes, games])
+
+    const notifyTimerEnd = async (name: string) => {
+        let granted = await isPermissionGranted()
+        if (!granted) granted = (await requestPermission()) === "granted"
+        if (!granted) return
+        sendNotification({
+            title: t("notifications.timerEnd.title"),
+            body: t(getSettings().stopOnTimerEnd ? "notifications.timerEnd.stopped" : "notifications.timerEnd.body", {
+                name,
+                count: getSettings().questTimerMinutes,
+            }),
+        })
     }
 
     const handleToggleFavorite = async (gameId: string) => {
@@ -351,6 +395,24 @@ export default function GameLauncher() {
                                 disabled={isLoading}
                             />
                         </div>
+                        <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant={steamOnlyFilter ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => setSteamOnlyFilter((value) => !value)}
+                                        disabled={isLoading}
+                                        aria-pressed={steamOnlyFilter}
+                                        aria-label={t("search.steamOnlyFilter")}
+                                        className={`shrink-0 max-sm:h-9 max-sm:w-9 ${steamOnlyFilter ? "" : "bg-background"}`}
+                                    >
+                                        <Filter className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">{t("search.steamOnlyFilter")}</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                         <Button variant="outline" onClick={handleRefresh} disabled={isLoading || isRefreshing} className="bg-background whitespace-nowrap max-sm:h-9 max-sm:px-2 max-sm:text-xs">
                             {isRefreshing ? (
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -506,7 +568,7 @@ export default function GameLauncher() {
                                 )}
 
                                 <p>
-                                    Copyright © 2026 holasoyender
+                                    Copyright © 2026 holasoyender, K1tsune12
                                 </p>
                             </div>
                         </>

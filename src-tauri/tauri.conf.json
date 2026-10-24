@@ -37,7 +37,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": false,
+    "createUpdaterArtifacts": true,
     "publisher": "K1tsune12",
     "copyright": "Copyright © 2026 holasoyender, K1tsune12",
     "shortDescription": "Discord Activity Simulator",
@@ -52,9 +52,9 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/holasoyender/disactivity/releases/latest/download/latest.json"
+        "https://github.com/K1tsune12/disactivity-steam/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhFODk3N0RFQjM0MjJDMzUKUldRMUxFS3ozbmVKamsxM2xvUHN4ZDJvbUxRb29oRGVSUURtdDhpOHFQZ0xOMzhNSk00YVVtRnUK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGRTY2QTUyREJGMjA2OTEKUldTUkJ2TGJVbXJtUCtNTFR1dThaMDNPUXRJRkkybWxJYktGL01iYndCcTZCSGlWOHppTEZ2NWEK"
     }
   }
 }

@@ -4,7 +4,8 @@
   },
   "search": {
     "placeholder": "Search games by name or ID...",
-    "button": "Search"
+    "button": "Search",
+    "steamOnlyFilter": "Show only Steam library games"
   },
   "actions": {
     "refresh": "Refresh",
@@ -147,7 +148,21 @@
       "title": "Quest timer",
       "show": "Show quest progress",
       "minutes_one": "{{count}} minute",
-      "minutes_other": "{{count}} minutes"
+      "minutes_other": "{{count}} minutes",
+      "notify": "Notify when the timer ends",
+      "autoStop": "Stop the game when the timer ends"
+    },
+    "windows": {
+      "title": "Windows",
+      "hideGameWindows": "Hide game windows from the taskbar",
+      "closeToTray": "Close to the system tray"
+    }
+  },
+  "notifications": {
+    "timerEnd": {
+      "title": "Quest timer finished",
+      "body": "{{name}} has been running for {{count}} minutes.",
+      "stopped": "{{name}} ran for {{count}} minutes and was stopped."
     }
   }
 }
