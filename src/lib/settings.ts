@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react"
+import { DEFAULT_SOUND } from "@/lib/sound"
 
 export type TimerEndAction = "none" | "stop" | "stopAndClose"
 
@@ -11,6 +12,10 @@ export interface AppSettings {
     customTimerOptions: number[]
     /** Windows notification when the quest timer ends */
     notifyOnTimerEnd: boolean
+    /** Play a sound when the quest timer ends */
+    soundOnTimerEnd: boolean
+    /** A preset file from C:\Windows\Media or the full path of a .wav picked by the user */
+    timerSound: string
     timerEndAction: TimerEndAction
     /** Minutes used by the "close Disactivity after" schedule */
     autoCloseMinutes: number
@@ -31,6 +36,8 @@ const DEFAULT_SETTINGS: AppSettings = {
     questTimerMinutes: 15,
     customTimerOptions: [],
     notifyOnTimerEnd: true,
+    soundOnTimerEnd: true,
+    timerSound: DEFAULT_SOUND,
     timerEndAction: "none",
     autoCloseMinutes: 60,
     hideGameWindows: false,

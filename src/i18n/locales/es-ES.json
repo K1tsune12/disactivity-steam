@@ -158,7 +158,8 @@
         "none": "No hacer nada",
         "stop": "Detener el juego",
         "stopAndClose": "Detener el juego y cerrar Disactivity"
-      }
+      },
+      "sound": "Reproducir un sonido"
     },
     "windows": {
       "title": "Ventanas",
@@ -173,6 +174,21 @@
       "placeholder": "Minutos",
       "start": "Programar",
       "hint": "Detiene todos los juegos y cierra la app. Solo para esta sesión."
+    },
+    "sound": {
+      "current": "Sonido: {{name}}",
+      "chooseFile": "Elegir un archivo .wav...",
+      "preview": "Escuchar",
+      "error": "No se pudo reproducir el sonido",
+      "presets": {
+        "calendar": "Recordatorio",
+        "notify": "Notificación",
+        "message": "Mensaje",
+        "tada": "Tada",
+        "chimes": "Campanas",
+        "alarm": "Alarma",
+        "ring": "Tono"
+      }
     }
   },
   "notifications": {

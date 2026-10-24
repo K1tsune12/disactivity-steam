@@ -20,6 +20,9 @@ import {
     AppWindow,
     Plus,
     Power,
+    Volume2,
+    FolderOpen,
+    Play,
 } from "lucide-react"
 
 import { getCurrentWindow } from "@tauri-apps/api/window"
@@ -37,8 +40,12 @@ import {
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem,
     DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { SOUND_PRESETS, findSoundPreset, pickSoundFile, playSound, soundFileName } from "@/lib/sound"
 import type { Game } from "@/components/game-card"
 import { Input } from "@/components/ui/input"
 import {
@@ -128,6 +135,27 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
     const questTimerMs = settings.questTimerMinutes * 60 * 1000
     const [customMinutesInput, setCustomMinutesInput] = useState("")
     const [autoCloseInput, setAutoCloseInput] = useState(String(settings.autoCloseMinutes))
+
+    const soundName = (sound: string) => {
+        const preset = findSoundPreset(sound)
+        return preset ? t(`settings.sound.presets.${preset.id}`) : soundFileName(sound)
+    }
+
+    const previewSound = (sound: string) => {
+        playSound(sound).catch((error) =>
+            toast.error(t("settings.sound.error"), { description: `${error}` })
+        )
+    }
+
+    const selectSound = (sound: string) => {
+        setSettings({ timerSound: sound })
+        previewSound(sound)
+    }
+
+    const chooseSoundFile = async () => {
+        const file = await pickSoundFile()
+        if (file) selectSound(file)
+    }
 
     const addCustomTimer = (minutes: number) => {
         addCustomTimerOption(minutes)
@@ -593,6 +621,52 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                         >
                             {t("settings.questTimer.notify")}
                         </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            checked={settings.soundOnTimerEnd}
+                            disabled={!settings.questTimerEnabled}
+                            onCheckedChange={(checked) => setSettings({ soundOnTimerEnd: checked === true })}
+                            onSelect={(e) => e.preventDefault()}
+                        >
+                            {t("settings.questTimer.sound")}
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger
+                                disabled={!settings.questTimerEnabled || !settings.soundOnTimerEnd}
+                                className="gap-2"
+                            >
+                                <Volume2 className="h-4 w-4" />
+                                <span className="truncate">{t("settings.sound.current", { name: soundName(settings.timerSound) })}</span>
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className="w-60">
+                                <DropdownMenuRadioGroup value={settings.timerSound} onValueChange={selectSound}>
+                                    {SOUND_PRESETS.map((preset) => (
+                                        <DropdownMenuRadioItem key={preset.id} value={preset.file} onSelect={(e) => e.preventDefault()}>
+                                            {t(`settings.sound.presets.${preset.id}`)}
+                                        </DropdownMenuRadioItem>
+                                    ))}
+                                    {!findSoundPreset(settings.timerSound) && (
+                                        <DropdownMenuRadioItem value={settings.timerSound} onSelect={(e) => e.preventDefault()}>
+                                            <span className="truncate">{soundFileName(settings.timerSound)}</span>
+                                        </DropdownMenuRadioItem>
+                                    )}
+                                </DropdownMenuRadioGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="cursor-pointer" onSelect={() => chooseSoundFile().catch(console.error)}>
+                                    <FolderOpen className="h-4 w-4" />
+                                    {t("settings.sound.chooseFile")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onSelect={(e) => {
+                                        e.preventDefault()
+                                        previewSound(settings.timerSound)
+                                    }}
+                                >
+                                    <Play className="h-4 w-4" />
+                                    {t("settings.sound.preview")}
+                                </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>
                         <p className="px-2 pt-1.5 pb-0.5 text-xs text-muted-foreground">{t("settings.questTimer.whenEnds")}</p>
                         <DropdownMenuRadioGroup
                             value={settings.timerEndAction}

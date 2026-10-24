@@ -10,8 +10,10 @@ import { Toaster } from "@/components/ui/sonner"
 import { Search, RefreshCw, Gamepad2, Loader2, Star, Filter } from "lucide-react"
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification"
 import { exit } from "@tauri-apps/plugin-process"
+import { getCurrentWindow, UserAttentionType } from "@tauri-apps/api/window"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { getSettings, useSettings } from "@/lib/settings"
+import { playSound } from "@/lib/sound"
 import { GameCard, getSteamAppIds, isSteamOnly, type Game } from "@/components/game-card"
 import { TitleBar } from "@/components/title-bar"
 import { Separator } from "@/components/ui/separator"
@@ -255,7 +257,11 @@ export default function GameLauncher() {
         }
     }
 
+    // Windows notification, plus an in-app message and a flashing taskbar icon in case
+    // notifications are turned off (Focus assist, or disabled for the app)
     const notify = async (title: string, body: string) => {
+        toast.info(title, { description: body, duration: Infinity })
+        getCurrentWindow().requestUserAttention(UserAttentionType.Informational).catch(console.error)
         let granted = await isPermissionGranted()
         if (!granted) granted = (await requestPermission()) === "granted"
         if (granted) sendNotification({ title, body })
@@ -271,6 +277,9 @@ export default function GameLauncher() {
     const timerHandled = useRef<Set<string>>(new Set())
     const handleTimerEnd = async (gameId: string) => {
         const current = getSettings()
+        if (current.soundOnTimerEnd) {
+            playSound(current.timerSound).catch(console.error)
+        }
         const name = games.find((g) => g.id === gameId)?.name || "Game"
         const minutes = current.questTimerMinutes
 

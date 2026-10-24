@@ -158,7 +158,8 @@
         "none": "Do nothing",
         "stop": "Stop the game",
         "stopAndClose": "Stop the game and close Disactivity"
-      }
+      },
+      "sound": "Play a sound"
     },
     "windows": {
       "title": "Windows",
@@ -173,6 +174,21 @@
       "placeholder": "Minutes",
       "start": "Schedule",
       "hint": "Stops all games and closes the app. Only for this session."
+    },
+    "sound": {
+      "current": "Sound: {{name}}",
+      "chooseFile": "Choose a .wav file...",
+      "preview": "Listen",
+      "error": "Could not play the sound",
+      "presets": {
+        "calendar": "Reminder",
+        "notify": "Notification",
+        "message": "Message",
+        "tada": "Tada",
+        "chimes": "Chimes",
+        "alarm": "Alarm",
+        "ring": "Ringtone"
+      }
     }
   },
   "notifications": {

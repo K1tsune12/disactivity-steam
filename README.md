@@ -68,6 +68,7 @@ The gear button in the title bar opens **Settings**:
 | Language | Portuguese (Brazil), English or Spanish |
 | Quest timer | Progress bar of 15, 30, 45 or 60 minutes, or off. Other lengths can be added and stay saved in the list |
 | Notify when the timer ends | Windows notification when the timer is reached |
+| Play a sound | Sound when the timer ends: Reminder, Notification, Message, Tada, Chimes, Alarm, Ringtone (Windows sounds) or any .wav file |
 | When the timer ends | Do nothing, stop the game, or stop the game and close Disactivity (only when no other game is running) |
 | Close Disactivity | Closes the app after the minutes you choose, stopping every game. Only for the current session |
 | Hide game windows from the taskbar | The fake windows still exist (Discord needs them) but stay out of the taskbar and Alt+Tab |

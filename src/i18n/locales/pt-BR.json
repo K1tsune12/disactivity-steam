@@ -152,7 +152,8 @@
         "none": "Não fazer nada",
         "stop": "Parar o jogo",
         "stopAndClose": "Parar o jogo e fechar o Disactivity"
-      }
+      },
+      "sound": "Tocar um som"
     },
     "windows": {
       "title": "Janelas",
@@ -167,6 +168,21 @@
       "placeholder": "Minutos",
       "start": "Programar",
       "hint": "Para todos os jogos e fecha o app. Vale só para esta sessão."
+    },
+    "sound": {
+      "current": "Som: {{name}}",
+      "chooseFile": "Escolher um arquivo .wav...",
+      "preview": "Ouvir",
+      "error": "Não foi possível tocar o som",
+      "presets": {
+        "calendar": "Lembrete",
+        "notify": "Notificação",
+        "message": "Mensagem",
+        "tada": "Tada",
+        "chimes": "Carrilhão",
+        "alarm": "Alarme",
+        "ring": "Toque"
+      }
     }
   },
   "updater": {

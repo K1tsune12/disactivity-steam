@@ -16,7 +16,9 @@
     "core:window:allow-unmaximize",
     "core:window:allow-close",
     "core:window:allow-hide",
+    "core:window:allow-request-user-attention",
     "notification:default",
+    "dialog:allow-open",
     "core:window:allow-is-maximized",
     "core:window:allow-start-dragging"
   ]

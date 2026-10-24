@@ -658,6 +658,30 @@ fn repair_steam_installs(state: &AppState) {
     }
 }
 
+// Icon shown on Windows notifications of the portable exe (see register_notification_app_id)
+const NOTIFICATION_ICON: &[u8] = include_bytes!("../icons/128x128.png");
+
+/// Windows only shows notifications from apps it knows. The installer registers the app
+/// through its Start menu shortcut; this registers the same app ID under the current user
+/// so the portable exe gets notifications too.
+#[cfg(windows)]
+fn register_notification_app_id(app: &tauri::App) {
+    use winreg::enums::HKEY_CURRENT_USER;
+
+    let key_path = format!("Software\\Classes\\AppUserModelId\\{}", app.config().identifier);
+    let Ok((key, _)) = winreg::RegKey::predef(HKEY_CURRENT_USER).create_subkey(key_path) else {
+        return;
+    };
+    let _ = key.set_value("DisplayName", &"Disactivity Steam");
+
+    if let Some(icon) = dirs::config_dir().map(|p| p.join("disactivity").join("notification-icon.png")) {
+        let saved = icon.parent().map_or(Ok(()), fs::create_dir_all).and_then(|_| fs::write(&icon, NOTIFICATION_ICON));
+        if saved.is_ok() {
+            let _ = key.set_value("IconUri", &icon.to_string_lossy().to_string());
+        }
+    }
+}
+
 fn show_main_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -777,6 +801,42 @@ fn register_steam_favorites(
 #[tauri::command]
 fn unregister_steam_favorite(game_id: String, state: tauri::State<'_, AppState>) {
     release_steam_install(&state, &game_id, |i| i.favorite = false);
+}
+
+/// Play a timer sound: a file name from C:\Windows\Media or the full path of a .wav
+#[tauri::command]
+fn play_sound(sound: String) -> Result<(), String> {
+    let path = if Path::new(&sound).is_absolute() {
+        PathBuf::from(&sound)
+    } else {
+        let windows = std::env::var("SystemRoot").unwrap_or_else(|_| "C:\\Windows".to_string());
+        PathBuf::from(windows).join("Media").join(&sound)
+    };
+    if !path.is_file() {
+        return Err(format!("Sound not found: {}", path.display()));
+    }
+    play_wav(&path)
+}
+
+#[cfg(windows)]
+fn play_wav(path: &Path) -> Result<(), String> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Media::Audio::{PlaySoundW, SND_ASYNC, SND_FILENAME, SND_NODEFAULT};
+
+    let wide: Vec<u16> = path.as_os_str().encode_wide().chain(std::iter::once(0)).collect();
+    let played = unsafe {
+        PlaySoundW(wide.as_ptr(), std::ptr::null_mut(), SND_FILENAME | SND_ASYNC | SND_NODEFAULT)
+    };
+    if played != 0 {
+        Ok(())
+    } else {
+        Err("Could not play this file. Only .wav files are supported".to_string())
+    }
+}
+
+#[cfg(not(windows))]
+fn play_wav(_path: &Path) -> Result<(), String> {
+    Err("Sounds are only supported on Windows".to_string())
 }
 
 /// Restart the Discord desktop client so it rereads the Steam library list
@@ -958,18 +1018,24 @@ fn cleanup_all_games(state: &AppState) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // Must be the first plugin: a second launch only focuses the running app,
+        // before its startup cleanup could kill the games of this one
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| show_main_window(app)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         // Remember window size, position and maximized state between launches
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(AppState {
             running_games: Mutex::new(HashMap::new()),
             steam_installs: Mutex::new(HashMap::new()),
         })
         .setup(|app| {
             cleanup_stale_steam_installs();
+            #[cfg(windows)]
+            register_notification_app_id(app);
             create_tray(app)?;
 
             let handle = app.handle().clone();
@@ -991,7 +1057,8 @@ pub fn run() {
             toggle_favorite,
             restart_discord,
             register_steam_favorites,
-            unregister_steam_favorite
+            unregister_steam_favorite,
+            play_sound
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
