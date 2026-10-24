@@ -18,6 +18,8 @@ import {
     Languages,
     Timer,
     AppWindow,
+    Plus,
+    Power,
 } from "lucide-react"
 
 import { getCurrentWindow } from "@tauri-apps/api/window"
@@ -38,10 +40,68 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { Game } from "@/components/game-card"
-import { QUEST_TIMER_OPTIONS, getSettings, setSettings, useSettings } from "@/lib/settings"
+import { Input } from "@/components/ui/input"
+import {
+    QUEST_TIMER_OPTIONS,
+    addCustomTimerOption,
+    getSettings,
+    parseMinutes,
+    removeCustomTimerOption,
+    setSettings,
+    useSettings,
+    type TimerEndAction,
+} from "@/lib/settings"
 
 type UpdateState = "idle" | "checking" | "available" | "downloading" | "ready" | "error"
 type SupportedLanguage = "pt-BR" | "en-US" | "es-ES"
+
+interface MinutesFieldProps {
+    value: string
+    onChange: (value: string) => void
+    onSubmit: (minutes: number) => void
+    placeholder: string
+    buttonLabel: string
+    buttonIcon: React.ReactNode
+    disabled?: boolean
+}
+
+/** Minutes input inside the settings menu (keys must not reach the menu's typeahead) */
+function MinutesField({ value, onChange, onSubmit, placeholder, buttonLabel, buttonIcon, disabled }: MinutesFieldProps) {
+    const minutes = parseMinutes(value)
+    const submit = () => {
+        if (minutes !== null) onSubmit(minutes)
+    }
+    return (
+        <div className="flex items-center gap-1.5 px-2 py-1">
+            <Input
+                type="number"
+                min={1}
+                inputMode="numeric"
+                value={value}
+                placeholder={placeholder}
+                disabled={disabled}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={(e) => {
+                    e.stopPropagation()
+                    if (e.key === "Enter") submit()
+                }}
+                className="h-8 text-sm"
+            />
+            <Button
+                type="button"
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8 shrink-0"
+                disabled={disabled || minutes === null}
+                aria-label={buttonLabel}
+                title={buttonLabel}
+                onClick={submit}
+            >
+                {buttonIcon}
+            </Button>
+        </div>
+    )
+}
 
 function getSupportedLanguage(language: string): SupportedLanguage {
     const baseLanguage = language.toLowerCase().split("-")[0]
@@ -66,6 +126,22 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
     const currentLanguage = getSupportedLanguage(i18n.resolvedLanguage || i18n.language)
     const settings = useSettings()
     const questTimerMs = settings.questTimerMinutes * 60 * 1000
+    const [customMinutesInput, setCustomMinutesInput] = useState("")
+    const [autoCloseInput, setAutoCloseInput] = useState(String(settings.autoCloseMinutes))
+
+    const addCustomTimer = (minutes: number) => {
+        addCustomTimerOption(minutes)
+        setCustomMinutesInput("")
+    }
+
+    // The deadline lives only in memory: reopening the app never closes it by surprise
+    const scheduleAutoClose = (enabled: boolean, minutes: number) => {
+        setAutoCloseInput(String(minutes))
+        setSettings({
+            autoCloseMinutes: minutes,
+            autoCloseAt: enabled ? Date.now() + minutes * 60 * 1000 : null,
+        })
+    }
     const [isHovered, setIsHovered] = useState(false)
     const [isDark, setIsDark] = useState(false)
     const [, setTick] = useState(0)
@@ -435,7 +511,7 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                             <Settings className="h-5 w-5" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-72">
+                    <DropdownMenuContent align="end" className="w-72 max-h-[80vh] overflow-y-auto">
                         <DropdownMenuLabel className="flex items-center gap-2 font-medium text-foreground">
                             <Settings className="h-4 w-4" />
                             {t("settings.title")}
@@ -472,17 +548,43 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                             value={String(settings.questTimerMinutes)}
                             onValueChange={(value) => setSettings({ questTimerMinutes: Number(value) })}
                         >
-                            {QUEST_TIMER_OPTIONS.map((minutes) => (
+                            {[...QUEST_TIMER_OPTIONS, ...settings.customTimerOptions].map((minutes) => (
                                 <DropdownMenuRadioItem
                                     key={minutes}
                                     value={String(minutes)}
                                     disabled={!settings.questTimerEnabled}
                                     onSelect={(e) => e.preventDefault()}
+                                    className="group"
                                 >
                                     {t("settings.questTimer.minutes", { count: minutes })}
+                                    {!QUEST_TIMER_OPTIONS.includes(minutes) && (
+                                        <button
+                                            type="button"
+                                            aria-label={t("settings.questTimer.remove")}
+                                            title={t("settings.questTimer.remove")}
+                                            className="ml-auto rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                            onPointerDown={(e) => e.stopPropagation()}
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                e.stopPropagation()
+                                                removeCustomTimerOption(minutes)
+                                            }}
+                                        >
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    )}
                                 </DropdownMenuRadioItem>
                             ))}
                         </DropdownMenuRadioGroup>
+                        <MinutesField
+                            value={customMinutesInput}
+                            onChange={setCustomMinutesInput}
+                            onSubmit={addCustomTimer}
+                            disabled={!settings.questTimerEnabled}
+                            placeholder={t("settings.questTimer.customPlaceholder")}
+                            buttonLabel={t("settings.questTimer.add")}
+                            buttonIcon={<Plus className="h-4 w-4" />}
+                        />
                         <DropdownMenuCheckboxItem
                             checked={settings.notifyOnTimerEnd}
                             disabled={!settings.questTimerEnabled}
@@ -491,14 +593,22 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                         >
                             {t("settings.questTimer.notify")}
                         </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                            checked={settings.stopOnTimerEnd}
-                            disabled={!settings.questTimerEnabled}
-                            onCheckedChange={(checked) => setSettings({ stopOnTimerEnd: checked === true })}
-                            onSelect={(e) => e.preventDefault()}
+                        <p className="px-2 pt-1.5 pb-0.5 text-xs text-muted-foreground">{t("settings.questTimer.whenEnds")}</p>
+                        <DropdownMenuRadioGroup
+                            value={settings.timerEndAction}
+                            onValueChange={(value) => setSettings({ timerEndAction: value as TimerEndAction })}
                         >
-                            {t("settings.questTimer.autoStop")}
-                        </DropdownMenuCheckboxItem>
+                            {(["none", "stop", "stopAndClose"] as const).map((action) => (
+                                <DropdownMenuRadioItem
+                                    key={action}
+                                    value={action}
+                                    disabled={!settings.questTimerEnabled}
+                                    onSelect={(e) => e.preventDefault()}
+                                >
+                                    {t(`settings.questTimer.actions.${action}`)}
+                                </DropdownMenuRadioItem>
+                            ))}
+                        </DropdownMenuRadioGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuLabel className="flex items-center gap-2">
                             <AppWindow className="h-4 w-4" />
@@ -518,6 +628,31 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                         >
                             {t("settings.windows.closeToTray")}
                         </DropdownMenuCheckboxItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="flex items-center gap-2">
+                            <Power className="h-4 w-4" />
+                            {t("settings.autoClose.title")}
+                        </DropdownMenuLabel>
+                        <DropdownMenuCheckboxItem
+                            checked={settings.autoCloseAt !== null}
+                            onCheckedChange={(checked) => scheduleAutoClose(checked === true, settings.autoCloseMinutes)}
+                            onSelect={(e) => e.preventDefault()}
+                        >
+                            {settings.autoCloseAt !== null
+                                ? t("settings.autoClose.at", {
+                                    time: new Date(settings.autoCloseAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                                })
+                                : t("settings.autoClose.enable", { count: settings.autoCloseMinutes })}
+                        </DropdownMenuCheckboxItem>
+                        <MinutesField
+                            value={autoCloseInput}
+                            onChange={setAutoCloseInput}
+                            onSubmit={(minutes) => scheduleAutoClose(true, minutes)}
+                            placeholder={t("settings.autoClose.placeholder")}
+                            buttonLabel={t("settings.autoClose.start")}
+                            buttonIcon={<Power className="h-4 w-4" />}
+                        />
+                        <p className="px-2 pb-1 text-xs text-muted-foreground">{t("settings.autoClose.hint")}</p>
                         <DropdownMenuSeparator />
                         <DropdownMenuLabel>{t("settings.appearance")}</DropdownMenuLabel>
                         <DropdownMenuItem className="cursor-pointer" onSelect={() => toggleTheme()}>

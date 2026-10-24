@@ -36,7 +36,8 @@ Most games added to Discord since 2025 (EA Sports FC 27, Madden NFL 27, NHL 27, 
 - **Steam library mode**: run games that have no executable on Discord's list, as long as they have a Steam ID
 - **No download needed**: the game does not need to be installed, and it does not need to be in your Steam account
 - **Favorites**: favorite Steam games are prepared when the app opens, so one Discord restart covers all of them
-- **Quest timer**: progress bar for quests, set to 15, 30, 45 or 60 minutes or turned off, with an optional notification and automatic stop when it ends
+- **Quest timer**: progress bar for quests of 15, 30, 45 or 60 minutes, or any length you add, with a notification and an optional action when it ends (stop the game, or stop it and close the app)
+- **Scheduled close**: close Disactivity after a number of minutes, independent from the games
 - **Steam games filter**: show only the games that run through the Steam library
 - **Clean taskbar**: optionally hide the fake game windows from the taskbar and Alt+Tab
 - **System tray**: tray icon, with an option to close to the tray instead of quitting
@@ -65,9 +66,10 @@ The gear button in the title bar opens **Settings**:
 | Option | What it does |
 |---|---|
 | Language | Portuguese (Brazil), English or Spanish |
-| Quest timer | Progress bar of 15, 30, 45 or 60 minutes, or off |
+| Quest timer | Progress bar of 15, 30, 45 or 60 minutes, or off. Other lengths can be added and stay saved in the list |
 | Notify when the timer ends | Windows notification when the timer is reached |
-| Stop the game when the timer ends | Stops the game by itself |
+| When the timer ends | Do nothing, stop the game, or stop the game and close Disactivity (only when no other game is running) |
+| Close Disactivity | Closes the app after the minutes you choose, stopping every game. Only for the current session |
 | Hide game windows from the taskbar | The fake windows still exist (Discord needs them) but stay out of the taskbar and Alt+Tab |
 | Close to the system tray | The close button hides the app; quit from the tray icon |
 | Theme | Light or dark |

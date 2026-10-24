@@ -1,7 +1,8 @@
 ### What's new
 - **Settings menu**: the gear button in the title bar now holds the language, the quest timer, window options and the theme.
 - **Portuguese (Brazil)**: new translation. The language can be picked in Settings (Portuguese, English or Spanish) or follow the system.
-- **Quest timer options**: 15, 30, 45 or 60 minutes, or turned off. It can send a Windows notification and stop the game by itself when it ends.
+- **Quest timer options**: 15, 30, 45 or 60 minutes, any length you add (saved in the list), or turned off. When it ends it can send a Windows notification and stop the game, or stop the game and close Disactivity.
+- **Scheduled close**: close Disactivity after a number of minutes, independent from the games.
 - **Hide game windows**: optional, keeps the fake game windows out of the taskbar and Alt+Tab.
 - **System tray**: the app has a tray icon, and the close button can send it to the tray instead of quitting.
 - **Steam games filter**: a button next to the search shows only the games that run through the Steam library.

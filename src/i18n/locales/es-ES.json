@@ -150,12 +150,29 @@
       "minutes_one": "{{count}} minuto",
       "minutes_other": "{{count}} minutos",
       "notify": "Avisar cuando termine el temporizador",
-      "autoStop": "Detener el juego cuando termine el temporizador"
+      "customPlaceholder": "Otro tiempo (minutos)",
+      "add": "Añadir tiempo",
+      "remove": "Quitar este tiempo",
+      "whenEnds": "Cuando termine el temporizador",
+      "actions": {
+        "none": "No hacer nada",
+        "stop": "Detener el juego",
+        "stopAndClose": "Detener el juego y cerrar Disactivity"
+      }
     },
     "windows": {
       "title": "Ventanas",
       "hideGameWindows": "Ocultar las ventanas de los juegos de la barra de tareas",
       "closeToTray": "Cerrar a la bandeja del sistema"
+    },
+    "autoClose": {
+      "title": "Cerrar Disactivity",
+      "enable_one": "Cerrar después de {{count}} minuto",
+      "enable_other": "Cerrar después de {{count}} minutos",
+      "at": "Se cierra a las {{time}}",
+      "placeholder": "Minutos",
+      "start": "Programar",
+      "hint": "Detiene todos los juegos y cierra la app. Solo para esta sesión."
     }
   },
   "notifications": {
@@ -163,6 +180,11 @@
       "title": "Temporizador de misión terminado",
       "body": "{{name}} lleva {{count}} minutos en ejecución.",
       "stopped": "{{name}} se ejecutó durante {{count}} minutos y se detuvo."
+    },
+    "appClosed": {
+      "title": "Disactivity cerrado",
+      "timerEnd": "{{name}} se ejecutó durante {{count}} minutos y no había otro juego en ejecución.",
+      "scheduled": "Terminó el plazo programado de {{count}} minutos."
     }
   }
 }

@@ -144,12 +144,29 @@
       "minutes_one": "{{count}} minuto",
       "minutes_other": "{{count}} minutos",
       "notify": "Avisar quando o timer acabar",
-      "autoStop": "Parar o jogo quando o timer acabar"
+      "customPlaceholder": "Outro tempo (minutos)",
+      "add": "Adicionar tempo",
+      "remove": "Remover este tempo",
+      "whenEnds": "Quando o timer acabar",
+      "actions": {
+        "none": "Não fazer nada",
+        "stop": "Parar o jogo",
+        "stopAndClose": "Parar o jogo e fechar o Disactivity"
+      }
     },
     "windows": {
       "title": "Janelas",
       "hideGameWindows": "Esconder as janelas dos jogos da barra de tarefas",
       "closeToTray": "Fechar para a bandeja do sistema"
+    },
+    "autoClose": {
+      "title": "Fechar o Disactivity",
+      "enable_one": "Fechar depois de {{count}} minuto",
+      "enable_other": "Fechar depois de {{count}} minutos",
+      "at": "Fecha às {{time}}",
+      "placeholder": "Minutos",
+      "start": "Programar",
+      "hint": "Para todos os jogos e fecha o app. Vale só para esta sessão."
     }
   },
   "updater": {
@@ -167,6 +184,11 @@
       "title": "Timer da missão terminou",
       "body": "{{name}} está rodando há {{count}} minutos.",
       "stopped": "{{name}} rodou por {{count}} minutos e foi parado."
+    },
+    "appClosed": {
+      "title": "Disactivity fechado",
+      "timerEnd": "{{name}} rodou por {{count}} minutos e não havia outro jogo rodando.",
+      "scheduled": "O prazo programado de {{count}} minutos terminou."
     }
   }
 }

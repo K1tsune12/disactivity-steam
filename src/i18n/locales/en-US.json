@@ -150,12 +150,29 @@
       "minutes_one": "{{count}} minute",
       "minutes_other": "{{count}} minutes",
       "notify": "Notify when the timer ends",
-      "autoStop": "Stop the game when the timer ends"
+      "customPlaceholder": "Other time (minutes)",
+      "add": "Add time",
+      "remove": "Remove this time",
+      "whenEnds": "When the timer ends",
+      "actions": {
+        "none": "Do nothing",
+        "stop": "Stop the game",
+        "stopAndClose": "Stop the game and close Disactivity"
+      }
     },
     "windows": {
       "title": "Windows",
       "hideGameWindows": "Hide game windows from the taskbar",
       "closeToTray": "Close to the system tray"
+    },
+    "autoClose": {
+      "title": "Close Disactivity",
+      "enable_one": "Close after {{count}} minute",
+      "enable_other": "Close after {{count}} minutes",
+      "at": "Closes at {{time}}",
+      "placeholder": "Minutes",
+      "start": "Schedule",
+      "hint": "Stops all games and closes the app. Only for this session."
     }
   },
   "notifications": {
@@ -163,6 +180,11 @@
       "title": "Quest timer finished",
       "body": "{{name}} has been running for {{count}} minutes.",
       "stopped": "{{name}} ran for {{count}} minutes and was stopped."
+    },
+    "appClosed": {
+      "title": "Disactivity closed",
+      "timerEnd": "{{name}} ran for {{count}} minutes and no other game was running.",
+      "scheduled": "The {{count}} minute schedule ended."
     }
   }
 }

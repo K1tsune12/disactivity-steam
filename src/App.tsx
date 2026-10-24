@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 import { Search, RefreshCw, Gamepad2, Loader2, Star, Filter } from "lucide-react"
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification"
+import { exit } from "@tauri-apps/plugin-process"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { getSettings, useSettings } from "@/lib/settings"
 import { GameCard, getSteamAppIds, isSteamOnly, type Game } from "@/components/game-card"
@@ -254,8 +255,41 @@ export default function GameLauncher() {
         }
     }
 
-    // Quest timer end: notify and/or stop each running game once
+    const notify = async (title: string, body: string) => {
+        let granted = await isPermissionGranted()
+        if (!granted) granted = (await requestPermission()) === "granted"
+        if (granted) sendNotification({ title, body })
+    }
+
+    // Closing exits the app for real (not to the tray); the backend cleans up on exit
+    const closeApp = async (reason: string) => {
+        await notify(t("notifications.appClosed.title"), reason).catch(console.error)
+        await exit(0)
+    }
+
+    // Quest timer end: notify, then stop the game and maybe close the app, once per run
     const timerHandled = useRef<Set<string>>(new Set())
+    const handleTimerEnd = async (gameId: string) => {
+        const current = getSettings()
+        const name = games.find((g) => g.id === gameId)?.name || "Game"
+        const minutes = current.questTimerMinutes
+
+        if (current.timerEndAction === "none") {
+            if (current.notifyOnTimerEnd) {
+                await notify(t("notifications.timerEnd.title"), t("notifications.timerEnd.body", { name, count: minutes }))
+            }
+            return
+        }
+
+        await handleStopGame(gameId)
+        const stillRunning = await invoke<string[]>("get_running_games")
+        if (current.timerEndAction === "stopAndClose" && stillRunning.length === 0) {
+            await closeApp(t("notifications.appClosed.timerEnd", { name, count: minutes }))
+        } else if (current.notifyOnTimerEnd) {
+            await notify(t("notifications.timerEnd.title"), t("notifications.timerEnd.stopped", { name, count: minutes }))
+        }
+    }
+
     useEffect(() => {
         if (!settings.questTimerEnabled) return
         const timerMs = settings.questTimerMinutes * 60 * 1000
@@ -264,31 +298,24 @@ export default function GameLauncher() {
                 const key = `${gameId}:${startTime}`
                 if (Date.now() - startTime < timerMs || timerHandled.current.has(key)) return
                 timerHandled.current.add(key)
-                const game = games.find((g) => g.id === gameId)
-                const name = game?.name || "Game"
-                if (settings.notifyOnTimerEnd) {
-                    notifyTimerEnd(name).catch(console.error)
-                }
-                if (settings.stopOnTimerEnd) {
-                    handleStopGame(gameId).catch(console.error)
-                }
+                handleTimerEnd(gameId).catch(console.error)
             })
         }, 5000)
         return () => clearInterval(interval)
     }, [settings, gameStartTimes, games])
 
-    const notifyTimerEnd = async (name: string) => {
-        let granted = await isPermissionGranted()
-        if (!granted) granted = (await requestPermission()) === "granted"
-        if (!granted) return
-        sendNotification({
-            title: t("notifications.timerEnd.title"),
-            body: t(getSettings().stopOnTimerEnd ? "notifications.timerEnd.stopped" : "notifications.timerEnd.body", {
-                name,
-                count: getSettings().questTimerMinutes,
-            }),
-        })
-    }
+    // "Close Disactivity after" schedule, independent from the games
+    useEffect(() => {
+        if (settings.autoCloseAt === null) return
+        const closeAt = settings.autoCloseAt
+        const interval = setInterval(() => {
+            if (Date.now() >= closeAt) {
+                clearInterval(interval)
+                closeApp(t("notifications.appClosed.scheduled", { count: settings.autoCloseMinutes })).catch(console.error)
+            }
+        }, 5000)
+        return () => clearInterval(interval)
+    }, [settings.autoCloseAt, settings.autoCloseMinutes])
 
     const handleToggleFavorite = async (gameId: string) => {
         try {
