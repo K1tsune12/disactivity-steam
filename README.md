@@ -20,7 +20,7 @@
 
 ---
 
-## About
+## 📖 About
 
 Disactivity Steam is a fork of [Disactivity](https://github.com/holasoyender/disactivity) by [holasoyender](https://github.com/holasoyender). The interface and the way you use it are the same. The difference is that it can also run games that the original app hides because Discord has no executable registered for them.
 
@@ -30,27 +30,27 @@ Most games added to Discord since 2025 (EA Sports FC 27, Madden NFL 27, NHL 27, 
   <img src="public/banner.png" alt="Disactivity Steam">
 </p>
 
-## Features
+## ✨ Features
 
-- **Thousands of games**: browse and search Discord's whole detectable games list
-- **Steam library mode**: run games that have no executable on Discord's list, as long as they have a Steam ID
-- **No download needed**: the game does not need to be installed, and it does not need to be in your Steam account
-- **Favorites**: favorite Steam games are prepared when the app opens, so one Discord restart covers all of them
-- **Quest timer**: progress bar for quests of 15, 30, 45 or 60 minutes, or any length you add, with a notification and an optional action when it ends (stop the game, or stop it and close the app)
-- **Scheduled close**: close Disactivity after a number of minutes, independent from the games
-- **Steam games filter**: show only the games that run through the Steam library
-- **Clean taskbar**: optionally hide the fake game windows from the taskbar and Alt+Tab
-- **System tray**: tray icon, with an option to close to the tray instead of quitting
-- **Automatic updates**: the installed app updates itself from this repository's releases
-- **Window memory**: size, position and maximized state are kept between launches
-- **Automatic cleanup**: everything the app creates is removed when you stop a game or close the app, and leftovers from a crash are removed on the next launch
-- **Languages**: Portuguese (Brazil), English and Spanish, chosen in Settings or taken from the system
+- 🎮 **Thousands of games**: browse and search Discord's whole detectable games list
+- 🧩 **Steam library mode**: run games that have no executable on Discord's list, as long as they have a Steam ID
+- 💾 **No download needed**: the game does not need to be installed, and it does not need to be in your Steam account
+- ⭐ **Favorites**: favorite Steam games are prepared when the app opens, so one Discord restart covers all of them
+- ⏱️ **Quest timer**: progress bar for quests of 15, 30, 45 or 60 minutes, or any length you add, with a notification and an optional action when it ends (stop the game, or stop it and close the app)
+- 🔌 **Scheduled close**: close Disactivity after a number of minutes, independent from the games
+- 🔎 **Steam games filter**: show only the games that run through the Steam library
+- 🧹 **Clean taskbar**: optionally hide the fake game windows from the taskbar and Alt+Tab
+- 📌 **System tray**: tray icon, with an option to close to the tray instead of quitting
+- 🔄 **Automatic updates**: the installed app updates itself from this repository's releases
+- 🪟 **Window memory**: size, position and maximized state are kept between launches
+- 🗑️ **Automatic cleanup**: everything the app creates is removed when you stop a game or close the app, and leftovers from a crash are removed on the next launch
+- 🌐 **Languages**: Portuguese (Brazil), English and Spanish, chosen in Settings or taken from the system
 
-## Download
+## 📥 Download
 
 Get the latest version from the [Releases](https://github.com/K1tsune12/disactivity-steam/releases/latest) page. There is an installer, which receives automatic updates, and a portable `.exe` that runs without installing.
 
-## How to use
+## 🎮 How to use
 
 1. Open Disactivity Steam
 2. Search for a game and click **Run**
@@ -77,7 +77,7 @@ The gear button in the title bar opens **Settings**:
 
 The filter button next to the search shows only Steam library games.
 
-## How it works
+## 🚀 How it works
 
 ### Games with an executable (same as the original)
 
@@ -99,7 +99,7 @@ When you run one of these games, Disactivity Steam:
 
 What was created is also saved to `%APPDATA%\disactivity\disactivity_steam_sessions.json`, so if the app is killed or crashes, the next launch cleans it up. While games are running, the app checks every minute that its entries are still there and puts them back if Steam rewrote its files.
 
-## Building from source
+## 🔧 Building from source
 
 ### Requirements
 
@@ -135,7 +135,7 @@ The [Build workflow](.github/workflows/build.yml) compiles the app on GitHub, so
 
 The installer is signed for the updater with a key stored in the repository secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. A fork of this project needs its own key (`npx tauri signer generate`) and its own `pubkey` and endpoint in `src-tauri/tauri.conf.json`.
 
-## Project structure
+## 📁 Project structure
 
 ```
 disactivity-steam/
@@ -150,7 +150,7 @@ disactivity-steam/
 └── public/                 # Static assets
 ```
 
-## Changes from the original
+## 🔀 Changes from the original
 
 - Steam library mode for games without executables (they were filtered out before)
 - Favorite Steam games are prepared at startup to avoid one Discord restart per game
@@ -168,21 +168,21 @@ disactivity-steam/
 - Steam is also found through the machine-wide install path when the user entry is missing
 
 
-## Privacy and safety
+## 🛡️ Privacy and safety
 
 - No data collection
 - The only network requests go to Discord's public API (games list and icons)
 - Steam files are only changed in Steam library mode, and only to add and later remove the entries described above
 
-## Disclaimer
+## ⚠️ Disclaimer
 
 This project is not affiliated with Discord or Valve. Simulating game activity goes against Discord's Terms of Service, so use it at your own risk.
 
-## License
+## 📄 License
 
 MIT, see [LICENSE](LICENSE). Based on [Disactivity](https://github.com/holasoyender/disactivity), Copyright (c) 2026 holasoyender.
 
-## Credits
+## 🤝 Credits
 
 - [holasoyender](https://github.com/holasoyender), author of the original Disactivity
 - [K1tsune12](https://github.com/K1tsune12), Steam library mode and the other changes in this fork
