@@ -15,6 +15,7 @@ import { getSettings, useSettings } from "@/lib/settings"
 import { playSound } from "@/lib/sound"
 import { GameCard, getSteamAppIds, isSteamOnly, type Game } from "@/components/game-card"
 import { TitleBar } from "@/components/title-bar"
+import { SettingsPanel } from "@/components/settings-panel"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
@@ -41,6 +42,7 @@ export default function GameLauncher() {
     const { t } = useTranslation()
     const [searchQuery, setSearchQuery] = useState("")
     const [steamOnlyFilter, setSteamOnlyFilter] = useState(false)
+    const [settingsOpen, setSettingsOpen] = useState(false)
     const settings = useSettings()
     const [games, setGames] = useState<Game[]>([])
     const [filteredGames, setFilteredGames] = useState<Game[]>([])
@@ -412,7 +414,12 @@ export default function GameLauncher() {
 
     return (
         <div className="h-screen flex flex-col bg-background/90 dark:bg-background/80 backdrop-blur-xl font-sans antialiased overflow-hidden">
-            <TitleBar runningGames={runningGamesInfo} onStopGame={handleStopGame} />
+            <TitleBar
+                runningGames={runningGamesInfo}
+                onStopGame={handleStopGame}
+                onOpenSettings={() => setSettingsOpen((open) => !open)}
+            />
+            {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
 
             <ScrollArea className="flex-1 mt-10">
                 <main className="mx-5 pb-5 overflow-hidden max-sm:mx-2 max-sm:pb-3">

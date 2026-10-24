@@ -121,8 +121,8 @@
     }
   },
   "theme": {
-    "toggleLight": "Switch to light mode",
-    "toggleDark": "Switch to dark mode"
+    "light": "Light",
+    "dark": "Dark"
   },
   "updater": {
     "tooltip": "Update available - click to install",
@@ -159,12 +159,16 @@
         "stop": "Stop the game",
         "stopAndClose": "Stop the game and close Disactivity"
       },
-      "sound": "Play a sound"
+      "sound": "Play a sound",
+      "duration": "Duration",
+      "durationHint": "Quests usually ask for 15 minutes. Add other lengths below, they stay saved."
     },
     "windows": {
       "title": "Windows",
       "hideGameWindows": "Hide game windows from the taskbar",
-      "closeToTray": "Close to the system tray"
+      "closeToTray": "Close to the system tray",
+      "hideGameWindowsHint": "Discord still detects the games, the windows just stay out of the taskbar and Alt+Tab.",
+      "closeToTrayHint": "The close button hides the app. Quit from the tray icon."
     },
     "autoClose": {
       "title": "Close Disactivity",
@@ -188,7 +192,22 @@
         "chimes": "Chimes",
         "alarm": "Alarm",
         "ring": "Ringtone"
-      }
+      },
+      "hint": "Windows sounds, or any .wav file."
+    },
+    "back": "Back",
+    "tabs": {
+      "general": "General",
+      "timer": "Timer",
+      "windows": "Windows",
+      "autoClose": "Close app"
+    },
+    "translucency": {
+      "title": "Transparency",
+      "hint": "Windows see-through effect. Mica needs Windows 11.",
+      "off": "Off",
+      "mica": "Mica",
+      "acrylic": "Acrylic"
     }
   },
   "notifications": {

@@ -61,7 +61,7 @@ Games marked with a blue **Steam** tag run in Steam library mode. The first time
 
 Games that have both an executable and a Steam ID show a **Run via Steam library** option in the arrow menu next to the Run button.
 
-The gear button in the title bar opens **Settings**:
+The gear button in the title bar opens **Settings**, a full window screen with tabs:
 
 | Option | What it does |
 |---|---|
@@ -73,7 +73,8 @@ The gear button in the title bar opens **Settings**:
 | Close Disactivity | Closes the app after the minutes you choose, stopping every game. Only for the current session |
 | Hide game windows from the taskbar | The fake windows still exist (Discord needs them) but stay out of the taskbar and Alt+Tab |
 | Close to the system tray | The close button hides the app; quit from the tray icon |
-| Theme | Light or dark |
+| Theme | Light or dark, remembered between launches |
+| Transparency | Windows Mica (Windows 11) or Acrylic effect, or off |
 
 The filter button next to the search shows only Steam library games.
 

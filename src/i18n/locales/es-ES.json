@@ -121,8 +121,8 @@
     }
   },
   "theme": {
-    "toggleLight": "Cambiar a modo claro",
-    "toggleDark": "Cambiar a modo oscuro"
+    "light": "Claro",
+    "dark": "Oscuro"
   },
   "updater": {
     "tooltip": "Actualización disponible - clic para instalar",
@@ -159,12 +159,16 @@
         "stop": "Detener el juego",
         "stopAndClose": "Detener el juego y cerrar Disactivity"
       },
-      "sound": "Reproducir un sonido"
+      "sound": "Reproducir un sonido",
+      "duration": "Duración",
+      "durationHint": "Las misiones suelen pedir 15 minutos. Añade otros tiempos abajo, quedan guardados."
     },
     "windows": {
       "title": "Ventanas",
       "hideGameWindows": "Ocultar las ventanas de los juegos de la barra de tareas",
-      "closeToTray": "Cerrar a la bandeja del sistema"
+      "closeToTray": "Cerrar a la bandeja del sistema",
+      "hideGameWindowsHint": "Discord sigue detectando los juegos, las ventanas solo salen de la barra de tareas y de Alt+Tab.",
+      "closeToTrayHint": "El botón de cerrar oculta la app. Sal desde el icono de la bandeja."
     },
     "autoClose": {
       "title": "Cerrar Disactivity",
@@ -188,7 +192,22 @@
         "chimes": "Campanas",
         "alarm": "Alarma",
         "ring": "Tono"
-      }
+      },
+      "hint": "Sonidos de Windows o cualquier archivo .wav."
+    },
+    "back": "Volver",
+    "tabs": {
+      "general": "General",
+      "timer": "Temporizador",
+      "windows": "Ventanas",
+      "autoClose": "Cerrar app"
+    },
+    "translucency": {
+      "title": "Transparencia",
+      "hint": "Efecto de transparencia de Windows. Mica requiere Windows 11.",
+      "off": "Desactivada",
+      "mica": "Mica",
+      "acrylic": "Acrílico"
     }
   },
   "notifications": {
