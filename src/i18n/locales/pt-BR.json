@@ -1,0 +1,157 @@
+{
+  "app": {
+    "title": "Disactivity Steam"
+  },
+  "search": {
+    "placeholder": "Buscar jogos por nome ou ID...",
+    "button": "Buscar"
+  },
+  "actions": {
+    "refresh": "Atualizar",
+    "run": "Iniciar",
+    "stop": "Parar",
+    "restartDiscord": "Reiniciar Discord"
+  },
+  "loading": {
+    "games": "Carregando jogos do Discord..."
+  },
+  "favorites": {
+    "title": "Favoritos",
+    "add": "Adicionar aos favoritos",
+    "remove": "Remover dos favoritos"
+  },
+  "gameCard": {
+    "running": "Em execução",
+    "executables": "Executáveis",
+    "id": "ID",
+    "steamOnly": "O Discord não tem executável para este jogo. Ele roda no modo biblioteca Steam: uma instalação falsa é criada na sua biblioteca da Steam (sem download, e o jogo não precisa estar na sua conta) e removida quando você para.",
+    "runViaSteam": "Iniciar pela biblioteca Steam"
+  },
+  "pagination": {
+    "label": "Paginação",
+    "previous": "Anterior",
+    "next": "Próxima",
+    "previousAria": "Ir para a página anterior",
+    "nextAria": "Ir para a próxima página",
+    "morePages": "Mais páginas",
+    "goToPage": "Ir para a página:",
+    "of": "de"
+  },
+  "footer": {
+    "favorite": "favorito",
+    "favorites": "favoritos",
+    "showing": "Exibindo",
+    "game": "jogo",
+    "games": "jogos",
+    "page": "Página",
+    "noGames": "Nenhum jogo para exibir"
+  },
+  "emptyState": {
+    "noGamesFound": "Nenhum jogo corresponde à sua busca."
+  },
+  "toast": {
+    "refreshed": {
+      "title": "Lista atualizada",
+      "description": "{{count}} jogos carregados da API do Discord."
+    },
+    "loadedFromCache": {
+      "title": "Dados carregados do cache",
+      "description": "{{count}} jogos carregados do cache."
+    },
+    "error": {
+      "title": "Erro",
+      "fetchFailed": "Não foi possível buscar os jogos: {{error}}"
+    },
+    "cannotStartGame": {
+      "title": "Não é possível iniciar o jogo",
+      "noExecutables": "Este jogo não tem executáveis definidos."
+    },
+    "gameStarted": {
+      "title": "Jogo iniciado",
+      "description": "{{name}} está em execução."
+    },
+    "failedToStartGame": {
+      "title": "Não foi possível iniciar o jogo"
+    },
+    "gameStopped": {
+      "title": "Jogo encerrado",
+      "description": "{{name}} foi encerrado."
+    },
+    "failedToStopGame": {
+      "title": "Não foi possível encerrar o jogo"
+    },
+    "addedToFavorites": {
+      "title": "Adicionado aos favoritos"
+    },
+    "removedFromFavorites": {
+      "title": "Removido dos favoritos"
+    },
+    "failedToUpdateFavorites": {
+      "title": "Não foi possível atualizar os favoritos"
+    },
+    "updateAvailable": {
+      "title": "Atualização disponível!",
+      "description": "A versão {{version}} está disponível. Clique no botão de atualização para instalá-la."
+    },
+    "updateDownloading": {
+      "title": "Baixando atualização...",
+      "description": "Baixando a versão {{version}} ({{progress}}%)"
+    },
+    "updateReady": {
+      "title": "Atualização pronta",
+      "description": "A versão {{version}} foi baixada. Reinicie o aplicativo para aplicá-la."
+    },
+    "updateInstalling": {
+      "title": "Instalando atualização...",
+      "description": "Aguarde enquanto a atualização é instalada."
+    },
+    "updateError": {
+      "title": "Erro na atualização",
+      "description": "Não foi possível atualizar: {{error}}"
+    },
+    "updateNoUpdates": {
+      "title": "Nenhuma atualização disponível",
+      "description": "Você já está usando a versão mais recente."
+    },
+    "updateCheckFailed": {
+      "title": "Falha ao verificar atualizações",
+      "description": "Não foi possível verificar se há atualizações: {{error}}"
+    },
+    "discordRestartNeeded": {
+      "title": "Reinicie o Discord se precisar",
+      "description": "Se o Discord não mostrar {{name}} como jogando, reinicie ele uma vez para que leia a biblioteca da Steam de novo. Deixe o jogo rodando aqui.",
+      "favorites": "{{count}} jogo(s) favorito(s) da Steam foram adicionados à sua biblioteca da Steam. Reinicie o Discord uma vez para que ele os detecte."
+    }
+  },
+  "theme": {
+    "toggleLight": "Ativar tema claro",
+    "toggleDark": "Ativar tema escuro"
+  },
+  "settings": {
+    "title": "Configurações",
+    "open": "Abrir configurações",
+    "language": "Idioma",
+    "appearance": "Aparência",
+    "languages": {
+      "ptBR": "Português (Brasil)",
+      "enUS": "English",
+      "esES": "Español"
+    },
+    "questTimer": {
+      "title": "Timer da missão",
+      "show": "Mostrar progresso da missão",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minutos"
+    }
+  },
+  "updater": {
+    "tooltip": "Atualização disponível, clique para instalar",
+    "downloading": "Baixando...",
+    "restart": "Reiniciar para atualizar"
+  },
+  "taskManager": {
+    "title": "Jogos em execução",
+    "stopAll": "Parar todos os jogos",
+    "noGames": "Nenhum jogo em execução"
+  }
+}

@@ -36,9 +36,10 @@ Most games added to Discord since 2025 (EA Sports FC 27, Madden NFL 27, NHL 27, 
 - **Steam library mode**: run games that have no executable on Discord's list, as long as they have a Steam ID
 - **No download needed**: the game does not need to be installed, and it does not need to be in your Steam account
 - **Favorites**: favorite Steam games are prepared when the app opens, so one Discord restart covers all of them
+- **Quest timer**: progress bar for quests, set to 15, 30, 45 or 60 minutes, or turned off in Settings
 - **Window memory**: size, position and maximized state are kept between launches
 - **Automatic cleanup**: everything the app creates is removed when you stop a game or close the app, and leftovers from a crash are removed on the next launch
-- **Languages**: English and Spanish
+- **Languages**: Portuguese (Brazil), English and Spanish, chosen in Settings or taken from the system
 
 ## Download
 
@@ -54,6 +55,8 @@ Get the latest version from the [Releases](https://github.com/K1tsune12/disactiv
 Games marked with a blue **Steam** tag run in Steam library mode. The first time Discord sees one of them it may need a restart, because Discord reads the Steam library only when it starts. When that happens the app shows a notice with a **Restart Discord** button. Steam can stay open or closed, it makes no difference.
 
 Games that have both an executable and a Steam ID show a **Run via Steam library** option in the arrow menu next to the Run button.
+
+The gear button in the title bar opens **Settings**: language, the quest timer and light or dark theme.
 
 ## How it works
 
@@ -104,6 +107,13 @@ npm run tauri dev
 npm run tauri build
 ```
 
+### Automatic builds
+
+The [Build workflow](.github/workflows/build.yml) compiles the app on GitHub, so nothing needs to be installed to get a new version:
+
+- every push builds the installer and the portable exe and keeps them as an artifact on the workflow run, for testing
+- pushing a tag such as `v1.1.0` also publishes them as a release
+
 ## Project structure
 
 ```
@@ -127,6 +137,9 @@ disactivity-steam/
 - Automatic executable selection now prefers the game over its launcher (it picked the launcher for games like Baldur's Gate 3 and League of Legends)
 - A failure loading Discord's non-games list no longer breaks the whole game list
 - Window size and position are remembered
+- Settings menu with language selection and a configurable quest timer
+- Portuguese (Brazil) translation
+- Steam is also found through the machine-wide install path when the user entry is missing
 - The automatic update check is disabled, since it pointed to the original project's releases
 
 ## Privacy and safety
@@ -147,3 +160,4 @@ MIT, see [LICENSE](LICENSE). Based on [Disactivity](https://github.com/holasoyen
 
 - [holasoyender](https://github.com/holasoyender), author of the original Disactivity
 - [K1tsune12](https://github.com/K1tsune12), Steam library mode and the other changes in this fork
+- [kevenemanuel773-tech](https://github.com/kevenemanuel773-tech/disactivitybetter), Portuguese translation and the settings menu this fork's version is based on

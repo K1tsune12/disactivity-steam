@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Info, Play, Square, Loader2, Star, ChevronDown, Gamepad2 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useQuestTimer } from "@/lib/quest-timer"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -67,8 +68,6 @@ function getGameIconUrl(game: Game, size: number = 64): string {
     return "https://cdn.discordapp.com/embed/avatars/0.png"
 }
 
-const FIFTEEN_MINUTES_MS = 15 * 60 * 1000
-
 function formatElapsedTime(ms: number): string {
     const totalSeconds = Math.floor(ms / 1000)
     const hours = Math.floor(totalSeconds / 3600)
@@ -95,7 +94,9 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
         return () => clearInterval(interval)
     }, [isRunning, startTime])
 
-    const progress = Math.min((elapsed / FIFTEEN_MINUTES_MS) * 100, 100)
+    const questTimer = useQuestTimer()
+    const questTimerMs = questTimer.minutes * 60 * 1000
+    const progress = Math.min((elapsed / questTimerMs) * 100, 100)
 
     const win32Executables = getWin32Executables(game)
     const hasSteam = getSteamAppIds(game).length > 0
@@ -183,7 +184,7 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
                     </TooltipProvider>
                 </div>
                 <span className="block truncate max-w-full text-xs text-muted-foreground font-mono max-sm:text-[10px]">{t("gameCard.id")}: {game.id}</span>
-                {isRunning && (
+                {isRunning && questTimer.enabled && (
                     <div className="mt-1.5 flex items-center gap-2">
                         <div className="flex-1 h-1.5 rounded-full bg-muted/50 overflow-hidden">
                             <div
@@ -194,7 +195,7 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
                             />
                         </div>
                         <span className="text-[10px] text-muted-foreground whitespace-nowrap shrink-0 max-sm:hidden">
-                            {formatElapsedTime(elapsed)} / 15:00
+                            {formatElapsedTime(elapsed)} / {formatElapsedTime(questTimerMs)}
                         </span>
                     </div>
                 )}

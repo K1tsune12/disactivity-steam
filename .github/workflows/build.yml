@@ -1,0 +1,65 @@
+# Builds the Windows app on GitHub's servers.
+# - Push to any branch (or run it by hand): build and keep the files as a downloadable
+#   artifact for testing, nothing is published.
+# - Push a tag like v1.1.0: build and publish a GitHub release with the installer and
+#   the portable exe.
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            src-tauri
+            src-tauri/slave
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The fake game process is embedded in the app, so it has to exist first
+      - name: Build slave
+        working-directory: src-tauri/slave
+        run: cargo build --release
+
+      - name: Build app and installer
+        run: npx tauri build --bundles nsis
+
+      - name: Collect files
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item "src-tauri/target/release/bundle/nsis/*-setup.exe" "out/Disactivity.Steam_${version}_x64-setup.exe"
+          Copy-Item "src-tauri/target/release/disactivity-steam.exe" "out/Disactivity.Steam_${version}_x64_portable.exe"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: disactivity-steam-${{ github.sha }}
+          path: out/*
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true

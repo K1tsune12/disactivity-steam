@@ -326,14 +326,24 @@ struct SteamInstall {
 /// libraryfolders.vdf is shared by every running game, so edits are serialized
 static VDF_LOCK: Mutex<()> = Mutex::new(());
 
+/// Steam install folder: the current user's entry first, then the machine-wide one
+/// written by the installer (the user entry can be missing, e.g. for another account)
 #[cfg(windows)]
 fn steam_root() -> Option<PathBuf> {
-    use winreg::enums::HKEY_CURRENT_USER;
-    let key = winreg::RegKey::predef(HKEY_CURRENT_USER)
+    use winreg::enums::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
+    use winreg::RegKey;
+
+    let from_user = RegKey::predef(HKEY_CURRENT_USER)
         .open_subkey("Software\\Valve\\Steam")
-        .ok()?;
-    let path: String = key.get_value("SteamPath").ok()?;
-    Some(PathBuf::from(path))
+        .and_then(|key| key.get_value::<String, _>("SteamPath"));
+    let from_machine = RegKey::predef(HKEY_LOCAL_MACHINE)
+        .open_subkey("SOFTWARE\\WOW6432Node\\Valve\\Steam")
+        .and_then(|key| key.get_value::<String, _>("InstallPath"));
+    [from_user.ok(), from_machine.ok()]
+        .into_iter()
+        .flatten()
+        .map(PathBuf::from)
+        .find(|path| path.join("steamapps").is_dir())
 }
 
 #[cfg(not(windows))]

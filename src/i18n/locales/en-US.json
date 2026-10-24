@@ -132,5 +132,22 @@
     "title": "Running Games",
     "stopAll": "Stop All Games",
     "noGames": "No games running"
+  },
+  "settings": {
+    "title": "Settings",
+    "open": "Open settings",
+    "language": "Language",
+    "appearance": "Appearance",
+    "languages": {
+      "ptBR": "Português (Brasil)",
+      "enUS": "English",
+      "esES": "Español"
+    },
+    "questTimer": {
+      "title": "Quest timer",
+      "show": "Show quest progress",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes"
+    }
   }
 }

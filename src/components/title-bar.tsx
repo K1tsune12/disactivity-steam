@@ -12,7 +12,11 @@ import {
     RotateCw,
     Loader2,
     Activity,
-    StopCircle, SquareActivity
+    StopCircle,
+    SquareActivity,
+    Settings,
+    Languages,
+    Timer,
 } from "lucide-react"
 
 import { getCurrentWindow } from "@tauri-apps/api/window"
@@ -23,15 +27,27 @@ import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
     DropdownMenu,
+    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { Game } from "@/components/game-card"
+import { QUEST_TIMER_OPTIONS, setQuestTimer, useQuestTimer } from "@/lib/quest-timer"
 
 type UpdateState = "idle" | "checking" | "available" | "downloading" | "ready" | "error"
+type SupportedLanguage = "pt-BR" | "en-US" | "es-ES"
+
+function getSupportedLanguage(language: string): SupportedLanguage {
+    const baseLanguage = language.toLowerCase().split("-")[0]
+    if (baseLanguage === "pt") return "pt-BR"
+    if (baseLanguage === "es") return "es-ES"
+    return "en-US"
+}
 
 interface RunningGameInfo {
     game: Game
@@ -45,7 +61,10 @@ interface TitleBarProps {
 }
 
 export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
+    const currentLanguage = getSupportedLanguage(i18n.resolvedLanguage || i18n.language)
+    const questTimer = useQuestTimer()
+    const questTimerMs = questTimer.minutes * 60 * 1000
     const [isHovered, setIsHovered] = useState(false)
     const [isDark, setIsDark] = useState(false)
     const [, setTick] = useState(0)
@@ -101,6 +120,16 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
         // Fork: no automatic update check, the updater endpoint points to upstream
         // releases and would replace this build with the original app.
     }, [])
+
+    // Only an explicit choice is saved; otherwise the system language is used
+    const handleLanguageChange = (language: string) => {
+        i18n.services.languageDetector?.cacheUserLanguage?.(language, ["localStorage"])
+        i18n.changeLanguage(language).catch(console.error)
+    }
+
+    useEffect(() => {
+        document.documentElement.lang = currentLanguage
+    }, [currentLanguage])
 
     const toggleTheme = () => {
         setIsDark(!isDark)
@@ -300,7 +329,7 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                             <DropdownMenuSeparator />
                             {runningGamesArray.map(({ game, isLoading, startTime }) => {
                                 const elapsed = Date.now() - startTime
-                                const progress = Math.min((elapsed / (15 * 60 * 1000)) * 100, 100)
+                                const progress = Math.min((elapsed / questTimerMs) * 100, 100)
                                 return (
                                 <DropdownMenuItem
                                     key={game.id}
@@ -319,16 +348,20 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                                         <p className="text-sm font-medium truncate">{game.name}</p>
                                         <div className="flex items-center gap-1.5">
                                             <span className="text-xs text-green-500 font-medium">{formatElapsedTime(elapsed)}</span>
-                                            <span className="text-[10px] text-muted-foreground">/ 15:00</span>
+                                            {questTimer.enabled && (
+                                                <span className="text-[10px] text-muted-foreground">/ {formatElapsedTime(questTimerMs)}</span>
+                                            )}
                                         </div>
-                                        <div className="mt-1 h-1 rounded-full bg-muted/50 overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-1000 ease-linear ${
-                                                    progress >= 100 ? "bg-green-500" : "bg-primary"
-                                                }`}
-                                                style={{ width: `${progress}%` }}
-                                            />
-                                        </div>
+                                        {questTimer.enabled && (
+                                            <div className="mt-1 h-1 rounded-full bg-muted/50 overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+                                                        progress >= 100 ? "bg-green-500" : "bg-primary"
+                                                    }`}
+                                                    style={{ width: `${progress}%` }}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                     <Button
                                         variant="ghost"
@@ -385,9 +418,68 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
                     </TooltipProvider>
                 )}
 
-                <Button variant="secondary" size="icon" onClick={toggleTheme} className="h-8 w-8 max-sm:h-7 max-sm:w-7">
-                    {isDark ? <Sun className="h-5 w-5"/> : <Moon className="h-5 w-5"/>}
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            aria-label={t("settings.open")}
+                            title={t("settings.open")}
+                            className="h-8 w-8 max-sm:h-7 max-sm:w-7"
+                        >
+                            <Settings className="h-5 w-5" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-72">
+                        <DropdownMenuLabel className="flex items-center gap-2 font-medium text-foreground">
+                            <Settings className="h-4 w-4" />
+                            {t("settings.title")}
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="flex items-center gap-2">
+                            <Languages className="h-4 w-4" />
+                            {t("settings.language")}
+                        </DropdownMenuLabel>
+                        <DropdownMenuRadioGroup value={currentLanguage} onValueChange={handleLanguageChange}>
+                            <DropdownMenuRadioItem value="pt-BR">
+                                <span lang="pt-BR">{t("settings.languages.ptBR")}</span>
+                            </DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="en-US">
+                                <span lang="en-US">{t("settings.languages.enUS")}</span>
+                            </DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="es-ES">
+                                <span lang="es-ES">{t("settings.languages.esES")}</span>
+                            </DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="flex items-center gap-2">
+                            <Timer className="h-4 w-4" />
+                            {t("settings.questTimer.title")}
+                        </DropdownMenuLabel>
+                        <DropdownMenuCheckboxItem
+                            checked={questTimer.enabled}
+                            onCheckedChange={(checked) => setQuestTimer({ enabled: checked === true })}
+                        >
+                            {t("settings.questTimer.show")}
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuRadioGroup
+                            value={String(questTimer.minutes)}
+                            onValueChange={(value) => setQuestTimer({ minutes: Number(value) })}
+                        >
+                            {QUEST_TIMER_OPTIONS.map((minutes) => (
+                                <DropdownMenuRadioItem key={minutes} value={String(minutes)} disabled={!questTimer.enabled}>
+                                    {t("settings.questTimer.minutes", { count: minutes })}
+                                </DropdownMenuRadioItem>
+                            ))}
+                        </DropdownMenuRadioGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>{t("settings.appearance")}</DropdownMenuLabel>
+                        <DropdownMenuItem className="cursor-pointer" onSelect={() => toggleTheme()}>
+                            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                            {isDark ? t("theme.toggleLight") : t("theme.toggleDark")}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
                 {/* Minimize - Yellow */}
                 <button
