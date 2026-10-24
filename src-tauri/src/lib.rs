@@ -660,6 +660,7 @@ fn repair_steam_installs(state: &AppState) {
 
 // PowerShell scripts for Windows notifications (see each file for details)
 const NOTIFY_SCRIPT: &str = include_str!("../scripts/notify.ps1");
+const NOTIFICATION_SECONDS: u32 = 10;
 const NOTIFICATION_SHORTCUT_SCRIPT: &str = include_str!("../scripts/notification-shortcut.ps1");
 
 /// PowerShell command for one of the bundled scripts, written to the config dir and run
@@ -706,7 +707,7 @@ fn ensure_notification_shortcut(app: &tauri::App) {
     });
 }
 
-/// Windows notification that stays about 25 seconds, without the default sound (the app
+/// Windows notification shown for NOTIFICATION_SECONDS, without the default sound (the app
 /// plays the sound picked in Settings)
 #[tauri::command]
 fn show_notification(app: tauri::AppHandle, title: String, body: String) -> Result<(), String> {
@@ -714,6 +715,7 @@ fn show_notification(app: tauri::AppHandle, title: String, body: String) -> Resu
         .env("DISACTIVITY_APP_ID", &app.config().identifier)
         .env("DISACTIVITY_TITLE", title)
         .env("DISACTIVITY_BODY", body)
+        .env("DISACTIVITY_SECONDS", NOTIFICATION_SECONDS.to_string())
         .spawn()
         .map_err(|e| format!("Failed to show notification: {}", e))?;
     Ok(())
