@@ -1,18 +1,18 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Disactivity",
-  "version": "0.1.0",
-  "identifier": "com.holasoyender.disactivity",
+  "productName": "Disactivity Steam",
+  "version": "1.0.0",
+  "identifier": "com.k1tsune12.disactivitysteam",
   "build": {
-    "beforeDevCommand": "bun run dev",
+    "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "Disactivity",
+        "title": "Disactivity Steam",
         "width": 650,
         "height": 800,
         "decorations": false,
@@ -37,11 +37,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": true,
-    "publisher": "holasoyender",
-    "copyright": "Copyright © 2026 holasoyender",
+    "createUpdaterArtifacts": false,
+    "publisher": "K1tsune12",
+    "copyright": "Copyright © 2026 holasoyender, K1tsune12",
     "shortDescription": "Discord Activity Simulator",
-    "longDescription": "Disactivity allows you to simulate game activity on Discord by running fake game processes that Discord can detect.",
+    "longDescription": "Disactivity Steam simulates game activity on Discord by running fake game processes that Discord can detect, including games that only Discord recognizes through the Steam library.",
     "category": "Utility",
     "windows": {
       "certificateThumbprint": null,

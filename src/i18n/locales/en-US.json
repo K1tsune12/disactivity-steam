@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Disactivity"
+    "title": "Disactivity Steam"
   },
   "search": {
     "placeholder": "Search games by name or ID...",
@@ -9,7 +9,8 @@
   "actions": {
     "refresh": "Refresh",
     "run": "Run",
-    "stop": "Stop"
+    "stop": "Stop",
+    "restartDiscord": "Restart Discord"
   },
   "loading": {
     "games": "Loading games from Discord..."
@@ -22,7 +23,9 @@
   "gameCard": {
     "running": "Running",
     "executables": "Executables",
-    "id": "ID"
+    "id": "ID",
+    "steamOnly": "Discord has no executable for this game. It runs in Steam library mode: a fake install is created in your Steam library (no download, the game does not need to be in your account) and removed when stopped.",
+    "runViaSteam": "Run via Steam library"
   },
   "pagination": {
     "previous": "Previous",
@@ -109,6 +112,11 @@
     "updateCheckFailed": {
       "title": "Update check failed",
       "description": "Could not check for updates: {{error}}"
+    },
+    "discordRestartNeeded": {
+      "title": "Restart Discord if needed",
+      "description": "If Discord doesn't show {{name}} as playing, restart it once so it rereads the Steam library. Keep the game running here.",
+      "favorites": "{{count}} favorite Steam game(s) were added to your Steam library. Restart Discord once so it detects them."
     }
   },
   "theme": {
@@ -126,4 +134,3 @@
     "noGames": "No games running"
   }
 }
-

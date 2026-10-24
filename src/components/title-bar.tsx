@@ -98,8 +98,8 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
             document.documentElement.classList.add("dark")
         }
 
-        // Check for updates on boot
-        checkForUpdates().catch(console.error)
+        // Fork: no automatic update check, the updater endpoint points to upstream
+        // releases and would replace this build with the original app.
     }, [])
 
     const toggleTheme = () => {
@@ -274,7 +274,7 @@ export function TitleBar({ runningGames = new Map(), onStopGame }: TitleBarProps
             {/* Title */}
             <div className="flex items-center gap-2 flex-1 min-w-0" data-tauri-drag-region>
                 <img className="h-5 w-5 pointer-events-none" src="./icon.png" alt="App icon"/>
-                <span className="font-semibold text-sm text-foreground pointer-events-none truncate max-sm:hidden">Disactivity</span>
+                <span className="font-semibold text-sm text-foreground pointer-events-none truncate max-sm:hidden">Disactivity Steam</span>
             </div>
 
             <div

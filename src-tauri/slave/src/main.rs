@@ -36,8 +36,11 @@ fn main() {
         .and_then(|s| s.to_str())
         .unwrap_or("DisactivitySlave");
 
+    // Optional first argument overrides the window title (Steam library mode passes the game name)
+    let title = env::args().nth(1).unwrap_or_else(|| exe_name.to_string());
+
     let class_name = to_wide_string("DisactivitySlaveClass");
-    let window_title = to_wide_string(exe_name);
+    let window_title = to_wide_string(&title);
 
     unsafe {
         let hinstance = GetModuleHandleW(null_mut());
@@ -62,7 +65,7 @@ fn main() {
         let hwnd = CreateWindowExW(
             WS_EX_APPWINDOW | WS_EX_NOACTIVATE,
             class_name.as_ptr(),
-            window_title.as_ptr(), // Window title matches exe name
+            window_title.as_ptr(),
             WS_POPUP | WS_OVERLAPPEDWINDOW,
             -32000, // Off-screen X
             -32000, // Off-screen Y

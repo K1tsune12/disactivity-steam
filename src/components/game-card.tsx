@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
-import { Info, Play, Square, Loader2, Star, ChevronDown } from "lucide-react"
+import { Info, Play, Square, Loader2, Star, ChevronDown, Gamepad2 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
     DropdownMenu,
@@ -15,6 +15,12 @@ import {
 export interface Executable {
     name: string
     os?: string
+    is_launcher?: boolean
+}
+
+export interface ThirdPartySku {
+    distributor: string
+    id?: string | null
 }
 
 export interface Game {
@@ -23,6 +29,24 @@ export interface Game {
     icon_hash: string
     executables?: Executable[] | null
     aliases?: string[] | null
+    third_party_skus?: ThirdPartySku[] | null
+}
+
+export function getSteamAppIds(game: Game): string[] {
+    return (game.third_party_skus || [])
+        .filter((sku) => sku.distributor === "steam" && sku.id)
+        .map((sku) => sku.id as string)
+}
+
+function getWin32Executables(game: Game): Executable[] {
+    return (game.executables || []).filter(
+        (exe) => exe.os === "win32" && !exe.name.startsWith(">")
+    )
+}
+
+/** Without registered executables the only way to run is Steam library mode */
+export function isSteamOnly(game: Game): boolean {
+    return getWin32Executables(game).length === 0 && getSteamAppIds(game).length > 0
 }
 
 interface GameCardProps {
@@ -31,7 +55,7 @@ interface GameCardProps {
     isLoading: boolean
     isFavorite: boolean
     startTime?: number
-    onStart: (game: Game, selectedExecutable?: string) => void
+    onStart: (game: Game, selectedExecutable?: string, useSteam?: boolean) => void
     onStop: (gameId: string) => void
     onToggleFavorite: (gameId: string) => void
 }
@@ -73,16 +97,16 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
 
     const progress = Math.min((elapsed / FIFTEEN_MINUTES_MS) * 100, 100)
 
-    const win32Executables = (game.executables || []).filter(
-        (exe) => exe.os === "win32" && !exe.name.startsWith(">")
-    )
-    const hasMultipleExecutables = win32Executables.length > 1
+    const win32Executables = getWin32Executables(game)
+    const hasSteam = getSteamAppIds(game).length > 0
+    const steamOnly = isSteamOnly(game)
+    const hasRunOptions = win32Executables.length > 1 || (win32Executables.length > 0 && hasSteam)
 
     const handleClick = () => {
         if (isRunning) {
             onStop(game.id)
         } else {
-            onStart(game)
+            onStart(game, undefined, steamOnly)
         }
     }
 
@@ -113,6 +137,20 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
             <div className="flex-1 min-w-0 overflow-hidden">
                 <div className="flex items-center gap-2 min-w-0">
                     <h3 className="font-medium text-foreground truncate min-w-0 max-sm:text-sm">{game.name}</h3>
+                    {steamOnly && (
+                        <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-500 font-medium whitespace-nowrap shrink-0 cursor-help max-sm:text-[10px] max-sm:px-1">
+                                        Steam
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs">
+                                    {t("gameCard.steamOnly")}
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                     {isRunning && (
                         <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/20 text-green-500 font-medium whitespace-nowrap shrink-0 max-sm:text-[10px] max-sm:px-1">
                             {formatElapsedTime(elapsed)}
@@ -190,7 +228,7 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
                 <Button
                     size="sm"
                     onClick={handleClick}
-                    className={`shrink-0 max-sm:h-8 max-sm:px-2 ${!isRunning && hasMultipleExecutables ? "rounded-r-none" : ""}`}
+                    className={`shrink-0 max-sm:h-8 max-sm:px-2 ${!isRunning && hasRunOptions ? "rounded-r-none" : ""}`}
                     variant={isRunning ? "destructive" : "default"}
                     disabled={isLoading}
                 >
@@ -203,7 +241,7 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
                     )}
                     <span className="max-[420px]:hidden">{isRunning ? t("actions.stop") : t("actions.run")}</span>
                 </Button>
-                {!isRunning && hasMultipleExecutables && (
+                {!isRunning && hasRunOptions && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -225,6 +263,15 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
                                     {exe.name}
                                 </DropdownMenuItem>
                             ))}
+                            {hasSteam && (
+                                <DropdownMenuItem
+                                    onClick={() => onStart(game, undefined, true)}
+                                    className="text-xs cursor-pointer"
+                                >
+                                    <Gamepad2 className="h-4 w-4 mr-1.5" />
+                                    {t("gameCard.runViaSteam")}
+                                </DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )}

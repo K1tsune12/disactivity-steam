@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { invoke } from "@tauri-apps/api/core"
 import { Input } from "@/components/ui/input"
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { Toaster } from "@/components/ui/sonner"
 import { Search, RefreshCw, Gamepad2, Loader2, Star } from "lucide-react"
-import { GameCard, type Game } from "@/components/game-card"
+import { GameCard, getSteamAppIds, isSteamOnly, type Game } from "@/components/game-card"
 import { TitleBar } from "@/components/title-bar"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -25,6 +25,11 @@ import {
 interface FetchGamesResponse {
     games: Game[]
     from_cache: boolean
+}
+
+interface StartGameResponse {
+    path: string
+    needs_discord_restart: boolean
 }
 
 export default function GameLauncher() {
@@ -87,6 +92,50 @@ export default function GameLauncher() {
         fetchFavorites().catch(console.error)
     }, [])
 
+    // Discord only rereads the Steam library list on startup
+    const showDiscordRestartToast = (description: string) => {
+        toast.warning(t("toast.discordRestartNeeded.title"), {
+            description,
+            duration: Infinity,
+            action: {
+                label: t("actions.restartDiscord"),
+                onClick: () => {
+                    invoke("restart_discord").catch((error) =>
+                        toast.error(t("toast.error.title"), { description: `${error}` })
+                    )
+                },
+            },
+        })
+    }
+
+    // Favorite Steam-only games keep a fake Steam install while the app is open, so one
+    // Discord restart is enough for all of them
+    const registerSteamFavorites = async (favoriteGames: Game[]) => {
+        const steamGames = favoriteGames.filter(isSteamOnly)
+        if (steamGames.length === 0) return
+        try {
+            const needsRestart = await invoke<boolean>("register_steam_favorites", {
+                games: steamGames.map((game) => ({
+                    id: game.id,
+                    name: game.name,
+                    steam_app_ids: getSteamAppIds(game),
+                })),
+            })
+            if (needsRestart) {
+                showDiscordRestartToast(t("toast.discordRestartNeeded.favorites", { count: steamGames.length }))
+            }
+        } catch (error) {
+            toast.error(t("toast.error.title"), { description: `${error}` })
+        }
+    }
+
+    const steamFavoritesRegistered = useRef(false)
+    useEffect(() => {
+        if (steamFavoritesRegistered.current || games.length === 0 || favorites.size === 0) return
+        steamFavoritesRegistered.current = true
+        registerSteamFavorites(games.filter((game) => favorites.has(game.id))).catch(console.error)
+    }, [games, favorites])
+
     useEffect(() => {
         const terms = searchQuery
             .toLowerCase()
@@ -121,8 +170,9 @@ export default function GameLauncher() {
         fetchGames(true).catch(console.error)
     }
 
-    const handleStartGame = async (game: Game, selectedExecutable?: string) => {
-        if (!game.executables || game.executables.length === 0) {
+    const handleStartGame = async (game: Game, selectedExecutable?: string, useSteam: boolean = false) => {
+        const steamAppIds = getSteamAppIds(game)
+        if (!useSteam && (!game.executables || game.executables.length === 0)) {
             toast.error(t("toast.cannotStartGame.title"), {
                 description: t("toast.cannotStartGame.noExecutables"),
             })
@@ -132,10 +182,13 @@ export default function GameLauncher() {
         setLoadingGames((prev) => new Set(prev).add(game.id))
 
         try {
-            await invoke<string>("start_game", {
+            const response = await invoke<StartGameResponse>("start_game", {
                 gameId: game.id,
-                executables: game.executables,
+                gameName: game.name,
+                executables: game.executables || [],
                 selectedExecutable: selectedExecutable || null,
+                steamAppIds,
+                useSteam,
             })
 
             setRunningGames((prev) => new Set(prev).add(game.id))
@@ -143,6 +196,10 @@ export default function GameLauncher() {
             toast.success(t("toast.gameStarted.title"), {
                 description: t("toast.gameStarted.description", { name: game.name }),
             })
+
+            if (response.needs_discord_restart) {
+                showDiscordRestartToast(t("toast.discordRestartNeeded.description", { name: game.name }))
+            }
         } catch (error) {
             toast.error(t("toast.failedToStartGame.title"), {
                 description: `${error}`,
@@ -205,6 +262,14 @@ export default function GameLauncher() {
             toast.success(isFavorite ? t("toast.addedToFavorites.title") : t("toast.removedFromFavorites.title"), {
                 description: game?.name || gameId,
             })
+
+            if (game && isSteamOnly(game)) {
+                if (isFavorite) {
+                    await registerSteamFavorites([game])
+                } else {
+                    await invoke("unregister_steam_favorite", { gameId })
+                }
+            }
         } catch (error) {
             toast.error(t("toast.failedToUpdateFavorites.title"), {
                 description: `${error}`,

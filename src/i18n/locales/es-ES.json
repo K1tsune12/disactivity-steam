@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Disactivity"
+    "title": "Disactivity Steam"
   },
   "search": {
     "placeholder": "Buscar juegos por nombre o ID...",
@@ -9,7 +9,8 @@
   "actions": {
     "refresh": "Actualizar",
     "run": "Ejecutar",
-    "stop": "Detener"
+    "stop": "Detener",
+    "restartDiscord": "Reiniciar Discord"
   },
   "loading": {
     "games": "Cargando juegos desde Discord..."
@@ -22,7 +23,9 @@
   "gameCard": {
     "running": "Ejecutando",
     "executables": "Ejecutables",
-    "id": "ID"
+    "id": "ID",
+    "steamOnly": "Discord no tiene ejecutable para este juego. Se ejecuta en modo biblioteca de Steam: se crea una instalación falsa en tu biblioteca de Steam (sin descarga, el juego no necesita estar en tu cuenta) que se elimina al detenerlo.",
+    "runViaSteam": "Ejecutar vía biblioteca de Steam"
   },
   "pagination": {
     "previous": "Anterior",
@@ -109,6 +112,11 @@
     "updateCheckFailed": {
       "title": "Error al verificar actualizaciones",
       "description": "No se pudo verificar actualizaciones: {{error}}"
+    },
+    "discordRestartNeeded": {
+      "title": "Reinicia Discord si hace falta",
+      "description": "Si Discord no muestra {{name}} como jugando, reinícialo una vez para que relea la biblioteca de Steam. Mantén el juego en ejecución aquí.",
+      "favorites": "Se añadieron {{count}} juego(s) favorito(s) de Steam a tu biblioteca de Steam. Reinicia Discord una vez para que los detecte."
     }
   },
   "theme": {
@@ -126,4 +134,3 @@
     "noGames": "No hay juegos en ejecución"
   }
 }
-
