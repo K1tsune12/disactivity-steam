@@ -1,13 +1,14 @@
 # Builds the Windows app on GitHub's servers.
-# - Push to any branch (or run it by hand): build and keep the files as a downloadable
-#   artifact for testing, nothing is published.
+# - Push to dev (or run it by hand): build and keep the files as a downloadable artifact
+#   for testing, nothing is published. master is not built on push: its releases are
+#   built from the tag, and a second build of the same commit would only be cancelled.
 # - Push a tag like v1.1.0: build and publish a GitHub release with the installer, the
 #   portable exe and latest.json, which installed apps read to update themselves.
 name: Build
 
 on:
   push:
-    branches: ["**"]
+    branches: ["dev"]
     tags: ["v*"]
   workflow_dispatch:
 
