@@ -660,7 +660,7 @@ fn repair_steam_installs(state: &AppState) {
 
 // PowerShell scripts for Windows notifications (see each file for details)
 const NOTIFY_SCRIPT: &str = include_str!("../scripts/notify.ps1");
-const NOTIFICATION_SECONDS: u32 = 10;
+const NOTIFICATION_SECONDS: u32 = 7;
 const NOTIFICATION_SHORTCUT_SCRIPT: &str = include_str!("../scripts/notification-shortcut.ps1");
 
 /// PowerShell command for one of the bundled scripts, written to the config dir and run
