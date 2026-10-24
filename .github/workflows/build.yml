@@ -49,9 +49,11 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Collect files
+        id: collect
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          "version=$version" >> $env:GITHUB_OUTPUT
           $setup = "Disactivity.Steam_${version}_x64-setup.exe"
           New-Item -ItemType Directory -Force out | Out-Null
           Copy-Item "src-tauri/target/release/bundle/nsis/*-setup.exe" "out/$setup"
@@ -81,5 +83,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
+          name: Disactivity Steam ${{ steps.collect.outputs.version }}
           files: out/*
           body_path: RELEASE_NOTES.md
