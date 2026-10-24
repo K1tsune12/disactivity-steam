@@ -46,6 +46,16 @@ Most games added to Discord since 2025 (EA Sports FC 27, Madden NFL 27, NHL 27, 
 - 🗑️ **Automatic cleanup**: everything the app creates is removed when you stop a game or close the app, and leftovers from a crash are removed on the next launch
 - 🌐 **Languages**: Portuguese (Brazil), English and Spanish, chosen in Settings or taken from the system
 
+## 📸 Screenshots
+
+| Game list | Steam library games |
+|---|---|
+| ![Game list](docs/screenshots/1-game-list.png) | ![Filter showing only Steam library games](docs/screenshots/2-steam-filter.png) |
+
+| Settings: General | Settings: Timer |
+|---|---|
+| ![General settings: language, theme and transparency](docs/screenshots/3-settings-general.png) | ![Timer settings: duration, action, notification and sound](docs/screenshots/4-settings-timer.png) |
+
 ## 📥 Download
 
 Get the latest version from the [Releases](https://github.com/K1tsune12/disactivity-steam/releases/latest) page. There is an installer, which receives automatic updates, and a portable `.exe` that runs without installing.

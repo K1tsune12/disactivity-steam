@@ -3,6 +3,11 @@
 - 🪟 **Windows transparency**: optional Mica (Windows 11) or Acrylic effect, with the light or the dark theme.
 - 🎨 **Theme is remembered**: the light or dark choice now stays between launches.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/K1tsune12/disactivity-steam/master/docs/screenshots/3-settings-general.png" alt="General settings" width="400">
+  <img src="https://raw.githubusercontent.com/K1tsune12/disactivity-steam/master/docs/screenshots/4-settings-timer.png" alt="Timer settings" width="400">
+</p>
+
 ### 🐛 Fixes
 - In-app messages follow the app theme. In the light theme the text was light and hard to read.
 - Scrollbars and other native parts follow the app theme instead of always being light.
