@@ -559,9 +559,11 @@ fn create_steam_install(game_name: &str, steam_app_ids: &[String]) -> Result<Ste
     let installdir = fake_install_dir(game_name, app_id);
     let steamapps = main_library.join("steamapps");
     let manifest = steamapps.join(format!("appmanifest_{}.acf", app_id));
-    // StateFlags 4 = fully installed, so Steam does not try to download it
+    // StateFlags 4 = fully installed. For a game the user owns, Steam still sees an
+    // outdated build and wants to update it, so AutoUpdateBehavior 1 ("only update this
+    // game when I launch it") keeps it from downloading anything in the background.
     let content = format!(
-        "\"AppState\"\n{{\n\t\"appid\"\t\t\"{}\"\n\t\"universe\"\t\t\"1\"\n\t\"name\"\t\t\"{}\"\n\t\"StateFlags\"\t\t\"4\"\n\t\"installdir\"\t\t\"{}\"\n}}\n",
+        "\"AppState\"\n{{\n\t\"appid\"\t\t\"{}\"\n\t\"universe\"\t\t\"1\"\n\t\"name\"\t\t\"{}\"\n\t\"StateFlags\"\t\t\"4\"\n\t\"installdir\"\t\t\"{}\"\n\t\"AutoUpdateBehavior\"\t\t\"1\"\n}}\n",
         app_id,
         game_name.replace('"', ""),
         installdir
