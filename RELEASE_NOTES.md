@@ -1,16 +1,14 @@
 ### ✨ What's new
-- ⚙️ **New settings screen**: settings now open in the whole window, organized in tabs (General, Timer, Windows, Close app), and adapt to the window size.
-- 🪟 **Windows transparency**: optional Mica (Windows 11) or Acrylic effect, with the light or the dark theme.
-- 🎨 **Theme is remembered**: the light or dark choice now stays between launches.
+- 🎵 **More sound formats**: the timer sound can now be an mp3, ogg, m4a, aac, flac or opus file, not only wav.
+- 🪟 **Glass and solid backgrounds**: Transparency now has four options. Off is a solid background, Glass shows the desktop behind the window (the original look), plus Mica and Acrylic.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/K1tsune12/disactivity-steam/master/docs/screenshots/3-settings-general.png" alt="General settings" width="400">
-  <img src="https://raw.githubusercontent.com/K1tsune12/disactivity-steam/master/docs/screenshots/4-settings-timer.png" alt="Timer settings" width="400">
-</p>
+### ⚡ Performance
+- Scrolling the game list is lighter: the cards no longer run a blur on every frame, with the exact same look.
+- Searching waits for a short pause in typing before filtering the ~20,000 games, so typing does not stutter.
 
 ### 🐛 Fixes
-- In-app messages follow the app theme. In the light theme the text was light and hard to read.
-- Scrollbars and other native parts follow the app theme instead of always being light.
+- Messages that stay open (restart Discord, timer end) now change language right away when you switch it in Settings.
+- Steam no longer tries to download updates for a favorite game you own while Disactivity keeps its fake install (it is set to update only when launched).
 
 ### 📥 Downloads
 - `Disactivity.Steam_<version>_x64-setup.exe`: installer, recommended (receives automatic updates)

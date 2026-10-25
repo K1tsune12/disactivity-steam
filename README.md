@@ -84,7 +84,7 @@ The gear button in the title bar opens **Settings**, a full window screen with t
 | Hide game windows from the taskbar | The fake windows still exist (Discord needs them) but stay out of the taskbar and Alt+Tab |
 | Close to the system tray | The close button hides the app; quit from the tray icon |
 | Theme | Light or dark, remembered between launches |
-| Transparency | Windows Mica (Windows 11) or Acrylic effect, or off |
+| Transparency | Off (solid), Glass (desktop visible behind the window), Mica (Windows 11) or Acrylic |
 
 The filter button next to the search shows only Steam library games.
 
