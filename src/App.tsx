@@ -41,6 +41,12 @@ interface StartGameResponse {
 export default function GameLauncher() {
     const { t } = useTranslation()
     const [searchQuery, setSearchQuery] = useState("")
+    // Filtering ~20k games on every key press makes typing stutter; wait for a pause
+    const [debouncedQuery, setDebouncedQuery] = useState("")
+    useEffect(() => {
+        const timeout = setTimeout(() => setDebouncedQuery(searchQuery), 150)
+        return () => clearTimeout(timeout)
+    }, [searchQuery])
     const [steamOnlyFilter, setSteamOnlyFilter] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const settings = useSettings()
@@ -146,7 +152,7 @@ export default function GameLauncher() {
     }, [games, favorites])
 
     useEffect(() => {
-        const terms = searchQuery
+        const terms = debouncedQuery
             .toLowerCase()
             .split(",")
             .map((term) => term.trim())
@@ -174,7 +180,7 @@ export default function GameLauncher() {
         })
 
         setFilteredGames(results)
-    }, [searchQuery, games, steamOnlyFilter])
+    }, [debouncedQuery, games, steamOnlyFilter])
 
     const handleRefresh = () => {
         setSearchQuery("")
@@ -413,7 +419,7 @@ export default function GameLauncher() {
     }, [runningGames, loadingGames, games, gameStartTimes])
 
     return (
-        <div className="h-screen flex flex-col bg-background/90 dark:bg-background/80 backdrop-blur-xl font-sans antialiased overflow-hidden">
+        <div className="h-screen flex flex-col bg-background/90 dark:bg-background/80 font-sans antialiased overflow-hidden">
             <TitleBar
                 runningGames={runningGamesInfo}
                 onStopGame={handleStopGame}
