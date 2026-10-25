@@ -221,3 +221,9 @@ button:hover {
     background: linear-gradient(color-mix(in oklab, var(--accent) 30%, transparent), color-mix(in oklab, var(--accent) 30%, transparent)),
         color-mix(in oklab, var(--background) 80%, transparent);
 }
+
+/* Transparency "off": solid window background (the app root is slightly see-through by
+   default, which is the "glass" option) */
+.opaque .app-shell {
+    background-color: var(--background);
+}

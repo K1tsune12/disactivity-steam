@@ -2,8 +2,9 @@ import { useSyncExternalStore } from "react"
 import { Effect, getCurrentWindow } from "@tauri-apps/api/window"
 
 export type Theme = "light" | "dark"
-/** Windows window effects: Mica (Windows 11) or Acrylic (blurred glass) */
-export type Translucency = "off" | "mica" | "acrylic"
+/** off: solid background. glass: the desktop shows through, sharp (the original app look).
+ *  mica / acrylic: Windows window effects (Mica needs Windows 11, Acrylic is blurred glass) */
+export type Translucency = "off" | "glass" | "mica" | "acrylic"
 
 const STORAGE_KEY = "disactivityTheme"
 const TRANSLUCENCY_KEY = "disactivityTranslucency"
@@ -28,19 +29,24 @@ function applyTheme(theme: Theme) {
 function initialTranslucency(): Translucency {
     try {
         const saved = localStorage.getItem(TRANSLUCENCY_KEY)
-        if (saved === "mica" || saved === "acrylic") return saved
+        if (saved === "glass" || saved === "mica" || saved === "acrylic") return saved
+        // In 1.2.0 "off" still showed the desktop through the window, which is now "glass";
+        // a solid background is saved as "solid" so old "off" choices keep their look
+        if (saved === "solid") return "off"
     } catch {
-        // Storage unavailable: no effect
+        // Storage unavailable: original look
     }
-    return "off"
+    return "glass"
 }
 
 /** The window is already transparent; the effect blurs what is behind it and the
  *  .translucent class makes the app background see-through enough to show it */
 function applyTranslucency(translucency: Translucency) {
-    document.documentElement.classList.toggle("translucent", translucency !== "off")
+    const effect = translucency === "mica" || translucency === "acrylic"
+    document.documentElement.classList.toggle("translucent", effect)
+    document.documentElement.classList.toggle("opaque", translucency === "off")
     const window = getCurrentWindow()
-    const change = translucency === "off"
+    const change = !effect
         ? window.clearEffects()
         : window.setEffects({ effects: [translucency === "mica" ? Effect.Mica : Effect.Acrylic] })
     change.catch(console.error)
@@ -79,7 +85,7 @@ export function setTranslucency(translucency: Translucency) {
     currentTranslucency = translucency
     applyTranslucency(translucency)
     try {
-        localStorage.setItem(TRANSLUCENCY_KEY, translucency)
+        localStorage.setItem(TRANSLUCENCY_KEY, translucency === "off" ? "solid" : translucency)
     } catch {
         // Keep it for this session even if it cannot be saved
     }

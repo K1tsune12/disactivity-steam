@@ -204,10 +204,11 @@
     },
     "translucency": {
       "title": "Transparencia",
-      "hint": "Efecto de transparencia de Windows. Mica requiere Windows 11.",
+      "hint": "Cristal muestra el escritorio detrás de la ventana. Mica (Windows 11) y Acrílico son efectos de Windows que lo tiñen y difuminan.",
       "off": "Desactivada",
       "mica": "Mica",
-      "acrylic": "Acrílico"
+      "acrylic": "Acrílico",
+      "glass": "Cristal"
     }
   },
   "notifications": {

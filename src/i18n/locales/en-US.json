@@ -204,10 +204,11 @@
     },
     "translucency": {
       "title": "Transparency",
-      "hint": "Windows see-through effect. Mica needs Windows 11.",
+      "hint": "Glass shows the desktop behind the window. Mica (Windows 11) and Acrylic are Windows effects that tint and blur it.",
       "off": "Off",
       "mica": "Mica",
-      "acrylic": "Acrylic"
+      "acrylic": "Acrylic",
+      "glass": "Glass"
     }
   },
   "notifications": {

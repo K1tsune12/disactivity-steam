@@ -419,7 +419,7 @@ export default function GameLauncher() {
     }, [runningGames, loadingGames, games, gameStartTimes])
 
     return (
-        <div className="h-screen flex flex-col bg-background/90 dark:bg-background/80 font-sans antialiased overflow-hidden">
+        <div className="app-shell h-screen flex flex-col bg-background/90 dark:bg-background/80 font-sans antialiased overflow-hidden">
             <TitleBar
                 runningGames={runningGamesInfo}
                 onStopGame={handleStopGame}

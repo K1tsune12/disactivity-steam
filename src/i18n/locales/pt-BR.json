@@ -198,10 +198,11 @@
     },
     "translucency": {
       "title": "Transparência",
-      "hint": "Efeito de transparência do Windows. O Mica precisa do Windows 11.",
+      "hint": "Vidro mostra a área de trabalho atrás da janela. Mica (Windows 11) e Acrílico são efeitos do Windows que tingem e desfocam o fundo.",
       "off": "Desligada",
       "mica": "Mica",
-      "acrylic": "Acrílico"
+      "acrylic": "Acrílico",
+      "glass": "Vidro"
     }
   },
   "updater": {

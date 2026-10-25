@@ -297,7 +297,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                                 <ChoiceGroup
                                     value={translucency}
                                     onChange={(value) => setTranslucency(value as Translucency)}
-                                    choices={(["off", "mica", "acrylic"] as const).map((value) => ({
+                                    choices={(["off", "glass", "mica", "acrylic"] as const).map((value) => ({
                                         value,
                                         label: t(`settings.translucency.${value}`),
                                     }))}
