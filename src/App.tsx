@@ -13,6 +13,7 @@ import { getCurrentWindow, UserAttentionType } from "@tauri-apps/api/window"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { getSettings, useSettings } from "@/lib/settings"
 import { playSound } from "@/lib/sound"
+import { Translated, type TextKey } from "@/components/translated"
 import { GameCard, getSteamAppIds, isSteamOnly, type Game } from "@/components/game-card"
 import { TitleBar } from "@/components/title-bar"
 import { SettingsPanel } from "@/components/settings-panel"
@@ -108,12 +109,12 @@ export default function GameLauncher() {
     }, [])
 
     // Discord only rereads the Steam library list on startup
-    const showDiscordRestartToast = (description: string) => {
-        toast.warning(t("toast.discordRestartNeeded.title"), {
-            description,
+    const showDiscordRestartToast = (description: TextKey) => {
+        toast.warning(<Translated text={{ key: "toast.discordRestartNeeded.title" }} />, {
+            description: <Translated text={description} />,
             duration: Infinity,
             action: {
-                label: t("actions.restartDiscord"),
+                label: <Translated text={{ key: "actions.restartDiscord" }} />,
                 onClick: () => {
                     invoke("restart_discord").catch((error) =>
                         toast.error(t("toast.error.title"), { description: `${error}` })
@@ -137,7 +138,7 @@ export default function GameLauncher() {
                 })),
             })
             if (needsRestart) {
-                showDiscordRestartToast(t("toast.discordRestartNeeded.favorites", { count: steamGames.length }))
+                showDiscordRestartToast({ key: "toast.discordRestartNeeded.favorites", values: { count: steamGames.length } })
             }
         } catch (error) {
             toast.error(t("toast.error.title"), { description: `${error}` })
@@ -216,7 +217,7 @@ export default function GameLauncher() {
             })
 
             if (response.needs_discord_restart) {
-                showDiscordRestartToast(t("toast.discordRestartNeeded.description", { name: game.name }))
+                showDiscordRestartToast({ key: "toast.discordRestartNeeded.description", values: { name: game.name } })
             }
         } catch (error) {
             toast.error(t("toast.failedToStartGame.title"), {
@@ -266,14 +267,20 @@ export default function GameLauncher() {
 
     // Windows notification, plus an in-app message and a flashing taskbar icon in case
     // notifications are turned off (Focus assist, or disabled for the app)
-    const notify = async (title: string, body: string) => {
-        toast.info(title, { description: body, duration: Infinity })
+    // The title is a game name or a translation key. The in-app message stays open and
+    // follows language changes; the Windows notification is sent in the current language.
+    const notify = async (title: string | TextKey, body: TextKey) => {
+        const titleText = typeof title === "string" ? title : <Translated text={title} />
+        toast.info(titleText, { description: <Translated text={body} />, duration: Infinity })
         getCurrentWindow().requestUserAttention(UserAttentionType.Informational).catch(console.error)
-        await invoke("show_notification", { title, body })
+        await invoke("show_notification", {
+            title: typeof title === "string" ? title : t(title.key, title.values),
+            body: t(body.key, body.values),
+        })
     }
 
     // Closing exits the app for real (not to the tray); the backend cleans up on exit
-    const closeApp = async (title: string, reason: string) => {
+    const closeApp = async (title: string | TextKey, reason: TextKey) => {
         await notify(title, reason).catch(console.error)
         await exit(0)
     }
@@ -290,7 +297,7 @@ export default function GameLauncher() {
 
         if (current.timerEndAction === "none") {
             if (current.notifyOnTimerEnd) {
-                await notify(name, t("notifications.timerEnd.body", { count: minutes }))
+                await notify(name, { key: "notifications.timerEnd.body", values: { count: minutes } })
             }
             return
         }
@@ -298,9 +305,9 @@ export default function GameLauncher() {
         await handleStopGame(gameId)
         const stillRunning = await invoke<string[]>("get_running_games")
         if (current.timerEndAction === "stopAndClose" && stillRunning.length === 0) {
-            await closeApp(name, t("notifications.appClosed.timerEnd", { count: minutes }))
+            await closeApp(name, { key: "notifications.appClosed.timerEnd", values: { count: minutes } })
         } else if (current.notifyOnTimerEnd) {
-            await notify(name, t("notifications.timerEnd.stopped", { count: minutes }))
+            await notify(name, { key: "notifications.timerEnd.stopped", values: { count: minutes } })
         }
     }
 
@@ -326,8 +333,8 @@ export default function GameLauncher() {
             if (Date.now() >= closeAt) {
                 clearInterval(interval)
                 closeApp(
-                    t("notifications.appClosed.title"),
-                    t("notifications.appClosed.scheduled", { count: settings.autoCloseMinutes })
+                    { key: "notifications.appClosed.title" },
+                    { key: "notifications.appClosed.scheduled", values: { count: settings.autoCloseMinutes } }
                 ).catch(console.error)
             }
         }, 5000)

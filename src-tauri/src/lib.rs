@@ -857,6 +857,22 @@ fn play_sound(sound: String) -> Result<(), String> {
     play_wav(&path)
 }
 
+// Large enough for any notification sound, small enough to keep a mistake (e.g. a whole
+// album) from being loaded into memory
+const MAX_SOUND_FILE_BYTES: u64 = 30 * 1024 * 1024;
+
+/// Bytes of an audio file the web view plays itself (mp3, ogg, m4a...); .wav files and the
+/// Windows presets go through play_sound instead
+#[tauri::command]
+fn read_sound_file(path: String) -> Result<tauri::ipc::Response, String> {
+    let size = fs::metadata(&path).map_err(|e| format!("Sound not found: {}", e))?.len();
+    if size > MAX_SOUND_FILE_BYTES {
+        return Err("This file is too large for a notification sound (max 30 MB)".to_string());
+    }
+    let bytes = fs::read(&path).map_err(|e| format!("Could not read the sound: {}", e))?;
+    Ok(tauri::ipc::Response::new(bytes))
+}
+
 #[cfg(windows)]
 fn play_wav(path: &Path) -> Result<(), String> {
     use std::os::windows::ffi::OsStrExt;
@@ -1096,6 +1112,7 @@ pub fn run() {
             register_steam_favorites,
             unregister_steam_favorite,
             play_sound,
+            read_sound_file,
             show_notification
         ])
         .build(tauri::generate_context!())

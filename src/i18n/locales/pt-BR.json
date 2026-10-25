@@ -175,7 +175,7 @@
     },
     "sound": {
       "current": "Som: {{name}}",
-      "chooseFile": "Escolher um arquivo .wav...",
+      "chooseFile": "Escolher um arquivo de áudio...",
       "preview": "Ouvir",
       "error": "Não foi possível tocar o som",
       "presets": {
@@ -187,7 +187,7 @@
         "alarm": "Alarme",
         "ring": "Toque"
       },
-      "hint": "Sons do Windows ou qualquer arquivo .wav."
+      "hint": "Sons do Windows ou um arquivo de áudio seu (wav, mp3, ogg, m4a, flac)."
     },
     "back": "Voltar",
     "tabs": {

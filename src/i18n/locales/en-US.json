@@ -181,7 +181,7 @@
     },
     "sound": {
       "current": "Sound: {{name}}",
-      "chooseFile": "Choose a .wav file...",
+      "chooseFile": "Choose an audio file...",
       "preview": "Listen",
       "error": "Could not play the sound",
       "presets": {
@@ -193,7 +193,7 @@
         "alarm": "Alarm",
         "ring": "Ringtone"
       },
-      "hint": "Windows sounds, or any .wav file."
+      "hint": "Windows sounds, or your own audio file (wav, mp3, ogg, m4a, flac)."
     },
     "back": "Back",
     "tabs": {
