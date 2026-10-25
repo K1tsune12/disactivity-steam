@@ -189,3 +189,35 @@ button:hover {
 .translucent.dark {
     --panel: oklch(0.147 0.004 49.25 / 0.85);
 }
+
+/* Plain game cards. They used backdrop-blur, which with transparency on painted the
+   semi-transparent app background a second time under the card. That second layer is
+   painted here directly (same pixels, no blur pass on every scroll frame). The app root
+   uses bg-background/90 (light) and /80 (dark). */
+.game-card-glass {
+    background-color: color-mix(in oklab, var(--card) 50%, transparent);
+}
+
+.game-card-glass:hover {
+    background-color: color-mix(in oklab, var(--accent) 30%, transparent);
+}
+
+.translucent .game-card-glass {
+    background: linear-gradient(color-mix(in oklab, var(--card) 50%, transparent), color-mix(in oklab, var(--card) 50%, transparent)),
+        color-mix(in oklab, var(--background) 90%, transparent);
+}
+
+.translucent .game-card-glass:hover {
+    background: linear-gradient(color-mix(in oklab, var(--accent) 30%, transparent), color-mix(in oklab, var(--accent) 30%, transparent)),
+        color-mix(in oklab, var(--background) 90%, transparent);
+}
+
+.translucent.dark .game-card-glass {
+    background: linear-gradient(color-mix(in oklab, var(--card) 50%, transparent), color-mix(in oklab, var(--card) 50%, transparent)),
+        color-mix(in oklab, var(--background) 80%, transparent);
+}
+
+.translucent.dark .game-card-glass:hover {
+    background: linear-gradient(color-mix(in oklab, var(--accent) 30%, transparent), color-mix(in oklab, var(--accent) 30%, transparent)),
+        color-mix(in oklab, var(--background) 80%, transparent);
+}

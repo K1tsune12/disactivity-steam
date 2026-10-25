@@ -113,14 +113,14 @@ export function GameCard({ game, isRunning, isLoading, isFavorite, startTime, on
 
     return (
         // content-visibility skips layout and paint of cards outside the scroll view.
-        // No backdrop blur on purpose: behind a card there is only the flat app background,
-        // so it drew the same pixels at the cost of a GPU pass per card on every scroll frame.
+        // Plain cards use .game-card-glass (App.css) instead of a backdrop blur, which cost a
+        // GPU pass per card on every scroll frame for the same look.
         <div className={`flex items-center gap-4 p-3 rounded-lg border transition-colors overflow-hidden [content-visibility:auto] [contain-intrinsic-size:auto_80px] max-sm:gap-2 max-sm:p-2 ${
             isRunning 
                 ? "border-green-500/50 bg-green-500/10 hover:bg-green-500/15" 
                 : isFavorite
                     ? "border-yellow-500/50 bg-yellow-500/17 hover:bg-yellow-500/25"
-                    : "border-border/50 bg-card/50 hover:bg-accent/30"
+                    : "border-border/50 game-card-glass"
         }`}>
             <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted/50 max-sm:h-11 max-sm:w-11">
                 <img
